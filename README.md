@@ -16,7 +16,7 @@ print("hello world!")
 ​```
 ~~~
 
-If you have [basher](https://github.com/basherpm/basher), you can install `mdsh` by running `basher install pjeby/mdsh`.  Otherwise just clone this repo and copy or link the `mdsh` file to a directory on your `PATH`.
+If you have [basher](https://github.com/basherpm/basher), you can install `mdsh` by running `basher install bashup/mdsh`.  Otherwise just clone this repo and copy or link the `mdsh` file to a directory on your `PATH`.
 
 ### Usage
 
