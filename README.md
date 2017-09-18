@@ -1,14 +1,12 @@
 ## Multi-Lingual Literate Programming with `mdsh`
 
-`mdsh` is a script interpreter for markdown files.  By default, it only executes `shell` code blocks as bash code, but you can define various bash functions to extend it to handle other languages...  and these functions can be defined in your script's  `shell` blocks.  For example:
+`mdsh` is a script interpreter for markdown files.  By default, it only executes `shell` code blocks as bash code, but you can define various bash functions to extend it to handle other languages...  and these functions can be defined in your script's  `mdsh` blocks.  For example:
 
 ~~~markdown
 # Hello World in Python
 
-​```shell
-mdsh-lang-python() {
-    python
-}
+​```mdsh
+mdsh-lang-python() { python; }
 ​```
 
 ​```python
@@ -20,11 +18,11 @@ If you have [basher](https://github.com/basherpm/basher), you can install `mdsh`
 
 ### Usage
 
-Running `mdsh some-document.md args...` will read and interpret triple-backquoted code blocks from `some-document.md`, according to the language listed on the block.
+Running `mdsh some-document.md args...` will read and interpret triple-backquoted code blocks from `some-document.md`, according to the language listed on the block.  Blocks tagged as `mdsh` are interpreted as bash code, and executed immediately, as part of the markdown-to-shell translation process, so they can define mdsh hook functions (like `mdsh-lang-*`) to affect how other code blocks will be processed.
 
-Blocks tagged as `shell` are interpreted as bash code, and executed immediately.  Shell blocks can invoke various mdsh functions or define hook functions as described later in this document.  (They can also `INCLUDE` other files -- see the docs for the `INCLUDE` function later below.)
+Blocks tagged with `shell`, on the other hand, can contain arbitrary bash code, inlcuding calls to various mdsh API functions described later in this document.  (They can also `INCLUDE` other files -- see the docs for the `INCLUDE` function later below.)
 
-To process blocks in a language `X`, define a function named `mdsh-lang-X`.  It will then be called whenever a code block of  type `X` is encountered, with the contents of the block on the function's standard input.
+To process blocks in a language `X`, define a function named `mdsh-lang-X` in an `mdsh` block.  It will then be called whenever a code block of  type `X` is encountered, with the contents of the block on the function's standard input.
 
 Tagged code blocks which lack a language processor at the time they are encountered are appended to `$MDSH_TMP/unprocessed.lang`, where `lang` is the language tag on the code block, and `MDSH_TMP` is an automatically-created temporary directory.  (You can then use the accumulated contents of these files at the end of your script.)
 

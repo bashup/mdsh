@@ -78,6 +78,7 @@ RUN() {
 # run-markdown after the filename
 
 mdsh-lang-shell() { source <(cat) "${ARGV[@]:1}" ; }
+mdsh-lang-mdsh()  { source <(cat) ; }
 
 
 # markdown-to-shell cmd [lang...]
