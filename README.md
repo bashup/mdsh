@@ -34,19 +34,22 @@ If there is no `mdsh-lang-X`, the `mdsh-after-X` function can read the most rece
 
 #### Command-line Arguments
 
-You can pass additional arguments to `md`, after the path to the markdown file.  These additional arguments are available as `$1`, `$2`, etc. within any top-level `shell` blocks in the markdown file.
+You can pass additional arguments to `mdsh`, after the path to the markdown file.  These additional arguments are available as `$1`, `$2`, etc. within any top-level `shell` blocks in the markdown file.
 
 #### Making Executable Markdown Files
 
 If you want to make a markdown file directly executable, you can `chmod +x` it and give it a shebang line such as `#!/usr/bin/env mdsh`.  This will then let you run `somescript.md args..` without needing to type `mdsh` in front of it.
 
-A possible downside to this approach is that most markdown editors, converters, and viewers will treat the shebang as a level-one heading.  To avoid this, you can put something like this on the first line instead:
+If you want to get rid of the `.md` extension on your script, you'll probably want to also add a line to tell Github, your editor, etc. that the file is still markdown, e.g.:
 
 ```sh
-``exec mdsh "$0" "$@"``
+#!/usr/bin/env mdsh
+<!-- ex: set syntax=markdown : -->
 ```
 
-Most markdown processors will treat the above as a standalone paragraph containing a bit of code, while most shells will interpret it as a POSIX `sh` command to run `mdsh` on the file, passing along any extra arguments.  (Unlike a `#!`  line, though, this won't work with all shells, nor will the file be executable *without* the use of a shell, so consider your expected usage scenarios carefully before using this trick!)
+This will tell Github, atom (with the `vim-modeline` package), and other editor/display tools that the file is actually Markdown.
+
+(Alternately, you can keep the `.md` on the file for editing, but use an extensionless symlink to run it without needing to type the `.md`.)
 
 ### Extending `mdsh` or Reusing its Functions
 
