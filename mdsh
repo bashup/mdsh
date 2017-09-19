@@ -43,12 +43,10 @@
 set -euo pipefail
 
 # Main program: check for arguments and run markdown script
-
 mdsh-main() {
-    (($# > 0)) || mdsh-error "Usage: $0 markdownfile args..."
+    (($# > 0)) || mdsh-error "Usage: %s markdownfile args..." "$0"
     run-markdown "$@"
 }
-
 
 # run-markdown file args...
 #
@@ -69,7 +67,9 @@ RUN() {
     if fn-exists "mdsh-lang-$1"; then
         mdsh-lang-$1;
     else
-        mdsh-create-tempdir; cat >>"$MDSH_TMP/unprocessed.$1"
+        local cmd raw="$(cat)"
+        printf -v cmd 'mdsh_raw_%s+=("$raw")' "${1//[^_[:alnum:]]/_}"
+        eval "$cmd"
     fi
     if fn-exists "mdsh-after-$1"; then mdsh-after-$1; fi
 }
@@ -121,11 +121,11 @@ extract-between() {
 }
 
 
-# mdsh-error: echo arguments to stderr and return failure
+# mdsh-error: printf args to stderr and exit w/errorlevel 2
 # Can be overridden by extending scripts.
 
 mdsh-error() {
-    echo "$@" >&2; return 1
+    printf "$1\n" "${@:2}" >&2; exit 2
 }
 
 # fn-exists: succeed if argument is a function
@@ -134,40 +134,8 @@ fn-exists() {
     [[ "$(type -t "$1")" == "function" ]]
 }
 
-# Set up $MDSH_TMP as a temporary directory, and arrange for it to be deleted
-# on script exit
-
-mdsh-create-tempdir() {
-    if [[ -z "${MDSH_TMP-}" ]] || [[ ! -d "${MDSH_TMP-}" ]]; then
-        MDSH_TMP="$(mktemp -t -d mdsh-XXXXXXXXXX)"
-    fi
-}
-
-
-# Delete $MDSH_TMP if present, and unset MDSH_TMP
-
-mdsh-delete-tempdir() {
-    if [[ -n "${MDSH_TMP-}" ]] && [[ -d "${MDSH_TMP-}" ]] ; then
-        rm -rf "$MDSH_TMP"
-    fi
-    unset MDSH_TMP
-}
-
-# Post-script teardown processing: can be overridden to perform other actions
-# at exit, but then the new definition should still mdsh-delete-tempdir!
-
-mdsh-teardown() {
-    mdsh-delete-tempdir
-}
-
-
 
 # --- All functions have been defined, main script starts here! ---
-
-# Initialize MDSH_TMP and setup teardown trap
-MDSH_TMP=
-trap mdsh-teardown EXIT
-
 
 # check bash-source and run main only if directly executing
 
@@ -175,15 +143,6 @@ if [[ "$0" == "${BASH_SOURCE[0]}" ]]; then
     mdsh-main "$@"
     exit $?
 fi
-
-
-
-
-
-
-
-
-
 
 
 
