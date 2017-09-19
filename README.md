@@ -20,7 +20,7 @@ If you have [basher](https://github.com/basherpm/basher), you can install `mdsh`
 
 Running `mdsh some-document.md args...` will read and interpret triple-backquoted code blocks from `some-document.md`, according to the language listed on the block.  Blocks tagged as `mdsh` are interpreted as bash code, and executed immediately, as part of the markdown-to-shell translation process, so they can define mdsh hook functions (like `mdsh-lang-*`) to affect how other code blocks will be processed.
 
-Blocks tagged with `shell`, on the other hand, can contain arbitrary bash code, inlcuding calls to various mdsh API functions described later in this document.  (They can also `INCLUDE` other files -- see the docs for the `INCLUDE` function later below.)
+Blocks tagged with `shell`, on the other hand, can contain arbitrary bash code, inlcuding calls to various mdsh API functions described later in this document.
 
 To process blocks in a language `X`, define a function named `mdsh-lang-X` in an `mdsh` block.  It will then be called whenever a code block of  type `X` is encountered, with the contents of the block on the function's standard input.
 
@@ -28,19 +28,9 @@ Tagged code blocks which lack a language processor at the time they are encounte
 
 Functions named `mdsh-after-X` will be called *after* a code block of  type `X` is processed.  The function does *not* receive the block contents, and is called whether or not a corresponding  `mdsh-lang-X` function exists.  If there is no `mdsh-lang-X`, the `mdsh-after-X` function can read the block from `$MDSH_TMP/unprocessed.X` and then delete the file.  (This can be useful when running language interpreters that can't execute code via stdin, or when you want the code to run with the main script's stdin.)
 
-#### Command-line Arguments and Includes
+#### Command-line Arguments
 
 You can pass additional arguments to `md`, after the path to the markdown file.  These additional arguments are available as `$1`, `$2`, etc. within any top-level `shell` blocks in the markdown file.
-
-For convenient access inside of shell functions, there is also a bash array, `$ARGV`, that contains the full command line given to mdsh, including the path to the markdown file itself.  (In other words, `${ARGV[0]}` contains the path to the markdown file, `${ARGV[1]}` is the first argument after it, and so on.)
-
-The `INCLUDE` *file.ext args...* function executes another file as if it were literally included in the current file at the point of execution.  And within the included file, the positional arguments and `$ARGV`  array reflect the arguments given to `INCLUDE`.  If you want the included file to see the same arguments, use `INCLUDE filename "$@"` (in top-level code) or `INCLUDE filename "${ARGV[@]:1}"` (inside a function).
-
-Filenames ending in `.md`, `.mdown`, or `.markdown` are processed as markdown files, with code block interpretation as described at the start of this document.  Additional arguments passed to `INCLUDE` are available via `$1`, `$2`, etc. and `$ARGV` as described above.
-
-You aren't limited to including other markdown files, though: the supplied filename's extension determines how the file's contents will be interpreted.  Handlers for a specific extension can be defined by creating bash functions named `mdsh-include-ext`, where `ext` is the file extension.  The longest-matching extension will be used, so `INCLUDE somefile.tar.gz` will look for `mdsh-include-tar.gz` first, then `mdsh-include-gz`.
-
-If the file doesn't exist, lacks an extension, or no matching handler is found for that extension, an error message is written to stderr and the `INCLUDE` command fails, causing the overall script to terminate.
 
 #### Making Executable Markdown Files
 

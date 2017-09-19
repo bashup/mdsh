@@ -52,10 +52,10 @@ mdsh-main() {
 
 # run-markdown file args...
 #
-# Extract code blocks from `file` and run them, saving args as $ARGV
+# Extract code blocks from `file` and run them
 
 run-markdown() {
-    local ARGV=("$@")  # ARGV[0] = file, ARGV[1...] = args...
+    local __ARGV=("$@")  # ARGV[0] = file, ARGV[1...] = args...
     source <(markdown-to-shell RUN <"$1");
 }
 
@@ -77,9 +77,8 @@ RUN() {
 # Interpret shell code by sourcing it, passing in any positional arguments from
 # run-markdown after the filename
 
-mdsh-lang-shell() { source <(cat) "${ARGV[@]:1}" ; }
+mdsh-lang-shell() { source <(cat) "${__ARGV[@]:1}" ; }
 mdsh-lang-mdsh()  { source <(cat) ; }
-
 
 # markdown-to-shell cmd [lang...]
 #
@@ -122,34 +121,6 @@ extract-between() {
 }
 
 
-# INCLUDE file.ext args...
-#
-# Process a file according to its longest extension matching an existing
-# `mdsh-include-ext` function.  (So, x.tar.gz would first try to run
-# `mdsh-include-tar.gz`, then `mdsh-include-gz`.)  All arguments are forwarded
-# to the inclusion function.
-
-INCLUDE() {
-    [[ -f "$1" ]] || mdsh-error "INCLUDE file $1 does not exist";
-    local base="$(basename "$1")"
-    local ext="${base#*.}"
-    while [[ "$base" != "$ext" ]]; do
-        if fn-exists "mdsh-include-$ext"; then
-            mdsh-include-$ext "$@"
-            return 0
-        fi
-        base="$ext"; ext="${base#*.}"
-    done
-    mdsh-error "Unrecognized type $ext for INCLUDEd file $1"
-}
-
-# Include markdown files by running them as part of the current script
-
-mdsh-include-md()       { run-markdown "$@"; }
-mdsh-include-mdown()    { run-markdown "$@"; }
-mdsh-include-markdown() { run-markdown "$@"; }
-
-
 # mdsh-error: echo arguments to stderr and return failure
 # Can be overridden by extending scripts.
 
@@ -190,6 +161,7 @@ mdsh-teardown() {
 }
 
 
+
 # --- All functions have been defined, main script starts here! ---
 
 # Initialize MDSH_TMP and setup teardown trap
@@ -203,4 +175,31 @@ if [[ "$0" == "${BASH_SOURCE[0]}" ]]; then
     mdsh-main "$@"
     exit $?
 fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
