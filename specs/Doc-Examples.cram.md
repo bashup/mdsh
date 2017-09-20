@@ -18,4 +18,4 @@ And then we run the result with mdsh:
     // hey
     
 
-(Notice that the output for the each data block includes the line feeds that terminated them.)
+(Notice that the output for each data block includes the line feed that terminated it.)
