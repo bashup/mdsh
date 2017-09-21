@@ -104,16 +104,16 @@ mdsh-compile-shell() { mdsh-cat; }
 __COMPILE__() {
     local lang="${1//[^_[:alnum:]]/_}"
     if fn-exists mdsh-lang-$lang; then
-        mdsh-emit-func mdsh-lang-$lang "{" "} <<'\`\`\`'"; mdsh-cat; echo '```'
+        mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; mdsh-cat; echo '```'
     elif fn-exists mdsh-compile-$lang; then
         mdsh-compile-$lang
     else
         mdsh-slurp; printf "mdsh_raw_$lang+=(%q)\n" "$REPLY"
     fi
-    if fn-exists mdsh-after-$lang; then mdsh-emit-func mdsh-after-$lang; fi
+    if fn-exists mdsh-after-$lang; then mdsh-rewrite mdsh-after-$lang; fi
 }
 
-mdsh-emit-func() {
+mdsh-rewrite() {
     declare -f $1 | sed -e '1d; 2s/^{ $/'"${2-"{"}"'/; $s/^}$/'"${3-"\}"}"'/'
 }
 
