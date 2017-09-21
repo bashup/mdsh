@@ -1,12 +1,86 @@
 ## Compilation
 
-    $ source $TESTDIR/../mdsh
+### Command-Line Handling
+
+Our fixture and helper:
+
+    $ mdsh() { $TESTDIR/../mdsh "$@"; }
+    $ cat >t1.md <<'EOF'
+    > ```shell
+    > echo yep
+    > ```
+    > EOF
+
+Nominal Success cases:
+
+
+    $ mdsh --compile t1.md
+    echo yep
+    $ mdsh -c t1.md
+    echo yep
+    $ mdsh --eval t1.md
+    echo yep
+    __status=$? eval 'return $__status || exit $__status' 2>/dev/null
+    $ mdsh -E t1.md
+    echo yep
+    __status=$? eval 'return $__status || exit $__status' 2>/dev/null
+    $ mdsh --compile t1.md t1.md
+    echo yep
+    echo yep
+
+
+    $ mdsh t1.md
+    yep
+    $ mdsh -- t1.md
+    yep
+
+Pipes:
+
+
+    $ cat t1.md | mdsh --compile -
+    echo yep
+    $ cat t1.md | mdsh --compile t1.md - t1.md
+    echo yep
+    echo yep
+    echo yep
+    $ cat t1.md | mdsh -
+    yep
+
+Errors:
+
+
+    $ mdsh
+    Usage: */mdsh [ --compile | --eval ] markdownfile [args...] (glob)
+    [2]
+    $ mdsh --compile
+    Usage: */mdsh [ --compile | --eval ] FILENAME... (glob)
+    [2]
+    $ mdsh --compiler
+    */mdsh: unrecognized option: --compiler (glob)
+    [2]
+    $ mdsh -- --compile t1.md
+    */mdsh: line *: --compile: No such file or directory (glob)
+
+Help:
+
+    $ mdsh --help
+    Usage: */mdsh [ --compile | --eval ] markdownfile [args...] (glob)
+    
+    Run and/or compile code blocks from markdownfile(s) to bash.
+    Use a filename of `-` to run or compile from stdin.
+    
+    Options:
+      -h, --help                Show this help message and exit
+      -c, --compile MDFILE...   Compile MDFILE(s) to bash and output on stdout.
+      -E, --eval MDFILE...      Compile, but add a shelldown-support footer line
+    
+    $ 
 
 ### Basics
 
 Shell code should compile to itself:
 
-    $ mdsh-compile <<'EOF'
+    $ mdsh --compile - <<'EOF'
     > ```shell
     > echo hey!
     > ```
@@ -15,7 +89,7 @@ Shell code should compile to itself:
 
 Unrecognized languages append to a variable:
 
-    $ mdsh-compile <<'EOF'
+    $ mdsh --compile - <<'EOF'
     > ```python
     > print("hiya")
     > ```
@@ -24,6 +98,7 @@ Unrecognized languages append to a variable:
 
 Languages with a runtime function get embedded, and mdsh blocks are executed silently:
 
+    $ source $TESTDIR/../mdsh   # test `mdsh-compile` directly to check subshell functionality
     $ mdsh-compile <<'EOF'
     > ```mdsh
     > mdsh-lang-python() { python; }
@@ -45,7 +120,7 @@ Languages with a runtime function get embedded, and mdsh blocks are executed sil
 
 You can define mdsh-compile-X functions to generate code directly:
 
-    $ mdsh-compile <<'EOF'
+    $ mdsh --compile - <<'EOF'
     > ```mdsh
     > mdsh-compile-python() { printf 'python -c %q\n' "$(cat)"; }
     > ```
@@ -57,7 +132,7 @@ You can define mdsh-compile-X functions to generate code directly:
 
 And if there's both a lang-X and compile-X function, lang takes precedence:
 
-    $ mdsh-compile <<'EOF'
+    $ mdsh --compile - <<'EOF'
     > ```mdsh
     > mdsh-compile-python() { printf 'python -c %q\n' "$(cat)"; }
     > mdsh-lang-python() { python; }
@@ -77,23 +152,29 @@ And if there's both a lang-X and compile-X function, lang takes precedence:
 
 When `run-markdown` encounters a block with an unknown tag, it should append to a `mdsh_raw_`*tag* variable:
 
-    $ __COMPILE__ foo <<'EOF'
+    $ mdsh --compile - <<'EOF'
+    > ```foo
     > test
     > this!
+    > ```
     > EOF
     mdsh_raw_foo+=($'test\nthis!\n')
 
 And invalid characters for a variable name are replaced with `_`:
 
-    $ __COMPILE__ "a weirdly-formatted thing!" <<'EOF'
+    $ mdsh --compile - <<'EOF'
+    > ```a weirdly-formatted thing!
     > more
+    > ```
     > EOF
     mdsh_raw_a_weirdly_formatted_thing_+=($'more\n')
 
 But known languages are *not* added to a variable:
 
-    $ __COMPILE__ mdsh <<'EOF'
+    $ mdsh --compile - <<'EOF'
+    > ```mdsh
     > echo hello world!
+    > ```
     > EOF
     hello world!
 
@@ -102,16 +183,16 @@ But known languages are *not* added to a variable:
 
 You can use weird language tags:
 
-    $ markdown-to-shell TEST <<'EOF'
+    $ mdsh --compile - <<'EOF'
     > ```this is a weird $one!
+    > blah
     > ```
     > EOF
-    TEST <<'```' 'this is a weird $one!'
-    (```) (re)
+    mdsh_raw_this_is_a_weird__one_+=($'blah\n')
 
 So long as they don't contain single quotes:
 
-    $ markdown-to-shell TEST <<'EOF'
+    $ mdsh --compile - <<'EOF'
     > ```this is a 'weird $one!'
     > ```
     > EOF
@@ -119,14 +200,28 @@ So long as they don't contain single quotes:
 
 ### Running Compiled Code
 
-Positional args are passed to the compiled code:
+Positional args are passed to the compiled code, and `$0 == $BASH_SOURCE`:
 
-    $ run-markdown <(cat <<'EOF'
+    $ mdsh - a "b c" d <<'EOF'
     > ```shell
     > printf "%s\n" "$@"
     > ```
     > EOF
-    > ) a "b c" d
     a
     b c
     d
+    $ mdsh - <<'EOF'
+    > ```shell
+    > [[ $BASH_SOURCE == $0 ]] && echo yep!
+    > ```
+    > EOF
+    yep!
+
+Unfortunately, the only way you can programmatically *make* `$0 == $BASH_SOURCE` is if they're *empty*...  So we also set `$MDSH_ZERO` to what they "should have been"
+
+    $ mdsh - <<'EOF'
+    > ```shell
+    > echo "\$MDSH_ZERO='$MDSH_ZERO', \$0='$0', \$BASH_SOURCE='$BASH_SOURCE'"
+    > ```
+    > EOF
+    $MDSH_ZERO='-', $0='', $BASH_SOURCE=''
