@@ -124,8 +124,8 @@ mdsh-cat()   { mdsh-slurp; printf "%s" "$REPLY"; }
 # fn-exists: succeed if argument is a function
 fn-exists() { declare -F -- "$1"; } >/dev/null
 
-# mdsh-error: printf args to stderr and exit w/errorlevel 2
-mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 2; }
+# mdsh-error: printf args to stderr and exit w/EX_USAGE (code 64)
+mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 
 # markdown-to-shell cmd [lang...]
 #

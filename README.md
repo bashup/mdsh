@@ -236,7 +236,7 @@ For example, [jqmd](https://github.com/bashup/jqmd) adds a header and footer to 
 eval "mdsh.--compile() $(mdsh-rewrite mdsh.--compile '{ jqmd-header;' 'jqmd-footer; }')"
 ```
 
-`mdsh-rewrite` takes a function name and two optional strings that will replace the opening and closing brace lines of the function body.  The result is output to stdout, where it becomes the body of the new function.
+(`mdsh-rewrite` takes a function name and two optional strings that will replace the opening and closing brace lines of the function body.  The result is output to stdout, where it becomes the body of the new function.)
 
 ### Available Functions
 
@@ -244,7 +244,7 @@ The following functions are available for your use or alteration in scripts sour
 
 * `run-markdown` *mdfile args...* -- execute the specified markdown file with *args* as its positional arguments (`$1`,  `$2`, etc.)  Use this instead of `mdsh-main` if you just want to interepret some markdown and maybe pass it some arguments: it's really just shorthand for `source <(mdsh-compile mdfile) args...`.
 
-* `mdsh-error` *format args...* --`printf` *format args* to stderr and terminate the process with errorlevel 2.  (A linefeed is added to the format automatically.)
+* `mdsh-error` *format args...* --`printf` *format args* to stderr and terminate the process with errorlevel 64 ([EX_USAGE](https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3#DESCRIPTION)) .  (A linefeed is added to the format string automatically.)
 
 * `mdsh-compile` -- accepts markdown on stdin and outputs bash code on stdout.  The compilation takes place in a subshell, so hook functions defined in the code being compiled do **not** affect the caller's environment.  Hook functions *already* defined in the caller's environment, however, will be used to translate blocks of the relevant languages.
 

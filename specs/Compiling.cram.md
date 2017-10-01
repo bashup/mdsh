@@ -51,13 +51,13 @@ Errors:
 
     $ mdsh
     Usage: */mdsh [ --compile | --eval ] markdownfile [args...] (glob)
-    [2]
+    [64]
     $ mdsh --compile
     Usage: */mdsh [ --compile | --eval ] FILENAME... (glob)
-    [2]
+    [64]
     $ mdsh --compiler
     */mdsh: unrecognized option: --compiler (glob)
-    [2]
+    [64]
     $ mdsh -- --compile t1.md
     */mdsh: line *: --compile: No such file or directory (glob)
 
