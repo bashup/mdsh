@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# ---
+# Add your own commands, functions, and variables here.  Define defaults first,
+# then `import:` the desired devkit modules, and then define any overrides to
+# the devkit defaults.
+# ---
+
+# Available modules (uncomment to use):
+
+# import: cram                  # run tests using the "cram" functional test tool
+# import: entr-watch            # watch files and re-run tests or other commands
+# import: shell-console         # make the "console" command enter a subshell
+# import: virtualenv-support    # enable creation and use of Python virtualenvs
+
+# Define overrides, new commands, functions, etc. here:
