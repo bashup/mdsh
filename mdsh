@@ -95,10 +95,10 @@ run-markdown() { source <(mdsh-compile <"$1") "${@:2}"; }
 
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
-    source <(markdown-to-shell __COMPILE__);
+    eval "$(markdown-to-shell __COMPILE__)";
 )
 
-mdsh-compile-mdsh() { source <(mdsh-cat); }
+mdsh-compile-mdsh() { eval "$(mdsh-cat)"; }
 mdsh-compile-shell() { mdsh-cat; }
 
 __COMPILE__() {
@@ -136,7 +136,7 @@ mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 # blocks are processed.  If no languages are given, all code blocks with a tag
 # are processed.  (Except for ones containing any single-quote characters.)
 markdown-to-shell() {
-    local arg cmd="$1" lang="${2:-[^\']\{1,\\\}}"
+    local arg cmd="$1" any='[^'"'"']\{1,\}'; local lang="${2:-$any}"
 
     # Build up an "or" of languages, if more than one given
     if (($#>2)); then printf -v lang '\|%q' "${@:3}"; lang="$2$lang"; fi
