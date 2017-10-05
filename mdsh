@@ -136,7 +136,7 @@ mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 # blocks are processed.  If no languages are given, all code blocks with a tag
 # are processed.  (Except for ones containing any single-quote characters.)
 markdown-to-shell() {
-    local arg cmd="$1" lang="${2:-[^\x27]\\+}"
+    local arg cmd="$1" lang="${2:-[^\']\{1,\\\}}"
 
     # Build up an "or" of languages, if more than one given
     if (($#>2)); then printf -v lang '\|%q' "${@:3}"; lang="$2$lang"; fi
@@ -154,7 +154,7 @@ extract-markdown() { extract-between '^```'"$1"'$' '^```$' "${@:2}"; }
 #
 # Ouptut lines between start/end pairs, with the start and end replaced by
 # head and tail.  The head and tail can contain sed backrefs to start and end.
-extract-between() { sed -ne '/'"$1"'/,/'"$2"'/ { s/\('"$1"'\)/'"${3-}"'/; s/'"$2"'/'"${4-}"'/; p}'; }
+extract-between() { sed -ne '/'"$1"'/,/'"$2"'/ { s/\('"$1"'\)/'"${3-}"'/; s/'"$2"'/'"${4-}"'/; p;}'; }
 
 
 # --- All functions have been defined, main script starts here! ---
