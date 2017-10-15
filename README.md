@@ -88,7 +88,7 @@ To automate the handling of non-`shell` language blocks, you can define one or m
 These build rules are specified by defining specially-named bash functions.  Unlike functions in `shell` blocks, these functions are *not* part of your script and therefore can't be called directly.  Instead, `mdsh` itself invokes them (or copies out their source code), whenever subsequent blocks match the functions' names:
 
 * An `mdsh-lang-X` function is a template for code to be run when a block of language `X` is encountered.  Its function body is copied to the translated script as a bash compound statment (i.e. in curly braces`{...}`) , that will execute with the block contents as a heredoc on its standard input.  (Its standard output is the same as the overall script's.)
-* An `mdsh-compile-X` function is invoked *at compile time* with the block contents on standard input, and must output a bash source code translation of the block on its stdout.
+* An `mdsh-compile-X` function is invoked *at compile time* with the block contents as `$1`, and must output a bash source code translation of the block on its stdout.
 * An `mdsh-after-X` function is a template for code to be run *after* a block of language `X` is encountered.  Its function body is copied to the translated script as a block just after the `mdsh-lang-X` body, `mdsh-compile-X` output, or `mdsh_raw_X+=(contents)` statement.  It does *not* receive the block source, so its standard input and output are those of the script itself.
 
 If both an `mdsh-lang-X` and `mdsh-compile-X` function exist, `mdsh-lang-X` takes precedence.  Defining either one also disables the `$mdsh_raw_X` functionality: only untranslatable "data" blocks are added to the arrays.
@@ -114,7 +114,7 @@ mdsh-lang-yaml() { YAML "$(cat)"; }
 Which works pretty well, except, since the YAML is a constant value, why not convert it to JSON during compilation?  That way, we could eliminate the runtime overhead (if we save and rerun the compiled script):
 
 ```bash
-mdsh-compile-yaml() { printf 'JSON %q\n' "$(yaml2json -)"; }
+mdsh-compile-yaml() { printf 'JSON %q\n' "$(echo "$1" | yaml2json)"; }
 ```
 
 Notice the difference between the two functions: the `lang` function is a code *template*.  `mdsh` copies its body into your script source, resulting in code that looks like:

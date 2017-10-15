@@ -98,15 +98,15 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     eval "$(markdown-to-shell __COMPILE__)";
 )
 
-mdsh-compile-mdsh() { eval "$(mdsh-cat)"; }
-mdsh-compile-shell() { mdsh-cat; }
+mdsh-compile-mdsh() { eval "$1"; }
+mdsh-compile-shell() { printf '%s' "$1"; }
 
 __COMPILE__() {
     local lang="${1//[^_[:alnum:]]/_}"
     if fn-exists mdsh-lang-$lang; then
         mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; mdsh-cat; echo '```'
     elif fn-exists mdsh-compile-$lang; then
-        mdsh-compile-$lang
+        mdsh-slurp; mdsh-compile-$lang "$REPLY"
     else
         mdsh-slurp; printf "mdsh_raw_$lang+=(%q)\n" "$REPLY"
     fi

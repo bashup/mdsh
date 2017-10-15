@@ -9,8 +9,6 @@
 
 import: cram                  # run tests using the "cram" functional test tool
 import: entr-watch            # watch files and re-run tests or other commands
-
-# import: shell-console         # make the "console" command enter a subshell
-# import: virtualenv-support    # enable creation and use of Python virtualenvs
+import: shell-console         # make the "console" command enter a subshell
 
 # Define overrides, new commands, functions, etc. here:

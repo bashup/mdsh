@@ -122,7 +122,7 @@ You can define mdsh-compile-X functions to generate code directly:
 
     $ mdsh --compile - <<'EOF'
     > ```mdsh
-    > mdsh-compile-python() { printf 'python -c %q\n' "$(cat)"; }
+    > mdsh-compile-python() { printf 'python -c %q\n' "${1%$'\n'}"; }
     > ```
     > ```python
     > print("hiya")
