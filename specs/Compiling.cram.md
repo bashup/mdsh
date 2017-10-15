@@ -53,7 +53,13 @@ Errors:
     Usage: */mdsh [ --compile | --eval ] markdownfile [args...] (glob)
     [64]
     $ mdsh --compile
-    Usage: */mdsh [ --compile | --eval ] FILENAME... (glob)
+    Usage: */mdsh --compile FILENAME... (glob)
+    [64]
+    $ mdsh --eval
+    Usage: */mdsh --eval FILENAME (glob)
+    [64]
+    $ mdsh --eval - </dev/null
+    Usage: */mdsh --eval FILENAME (glob)
     [64]
     $ mdsh --compiler
     */mdsh: unrecognized option: --compiler (glob)
@@ -72,7 +78,7 @@ Help:
     Options:
       -h, --help                Show this help message and exit
       -c, --compile MDFILE...   Compile MDFILE(s) to bash and output on stdout.
-      -E, --eval MDFILE...      Compile, but add a shelldown-support footer line
+      -E, --eval MDFILE         Compile one file w/a shelldown-support footer line
     
     $ 
 

@@ -63,16 +63,16 @@ Use a filename of `-` to run or compile from stdin.
 Options:
   -h, --help                Show this help message and exit
   -c, --compile MDFILE...   Compile MDFILE(s) to bash and output on stdout.
-  -E, --eval MDFILE...      Compile, but add a shelldown-support footer line\n'
+  -E, --eval MDFILE         Compile one file w/a shelldown-support footer line\n'
 }
 
 mdsh.--eval() {
-    mdsh.--compile "$@"
-    echo $'__status=$? eval \'return $__status || exit $__status\' 2>/dev/null'
+    (($# == 1)) && [[ $1 != - ]] || mdsh-error "Usage: %s --eval FILENAME" "$0"; mdsh.--compile "$1"
+    echo "__status=\$? eval 'return \$__status || exit \$__status' 2>/dev/null"
 }
 
 mdsh.--compile() {
-    (($#)) || mdsh-error "Usage: %s [ --compile | --eval ] FILENAME..." "$0"
+    (($#)) || mdsh-error "Usage: %s --compile FILENAME..." "$0"
     for f; do mdsh-compile "$f"; done
 }
 
