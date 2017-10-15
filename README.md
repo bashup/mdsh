@@ -145,7 +145,7 @@ First, you can change the way you indicate certain code blocks.  All of these ar
 
 * Code blocks indented with four spaces, instead of fenced
 * Code blocks fenced with `~~~X` instead of `` ```X ``
-* Code blocks with no language tag, or with a single quote character anywhere in the language tag
+* Code blocks with no language tag
 
 Alternately, you can define empty `mdsh-compile-X` functions in an mdsh block, for each language you want to exclude from the compilation.
 
@@ -250,13 +250,8 @@ The following functions are available for your use or alteration in scripts sour
 
 * `mdsh-rewrite` *function* *before* *after* -- output the body block of *function* on stdout, optionally replacing the opening and closing braces with *before* and *after*.  (If you're using this to "edit" a function, remember that the replacements must include the opening and closing braces, and the closing brace must be preceded by either a newline or a semicolon or space.)
 
-* `markdown-to-shell` *command language_regexes...* -- read markdown from stdin, writing a sourceable shell script to stdout.  Triple-backquoted blocks whose tag matches any of the specified language-regexes are replaced with *command langtag* and a heredoc for the the block body. If no language-regexes are given, all blocks with a language are processed.
+* `markdown-to-shell` *command language_regexes...* -- **DEPRECATED**: in earlier versions of  `mdsh`, this function was the "compiler", and then a prepropcessor for the compiler, but now it's no longer used, and will be removed in a future version.
 
-  So for example, `markdown-to-shell process python perl` would output a `process python <<` command for each `python` code block, and and a `process perl <<` command for each `perl` code block.  It's up to you to supply a *command* that can take a language-name argument and process data from its stdin.  (Typically, your full command using this would look something like `source <(markdown-to-shell cmd lang... <somefile.md)`, to parse `somefile.md` and execute the result.)
-
-  In an earlier, interpreter-only version of  `mdsh`, this function was the "compiler", but now it's just a prepropcessor for the compiler.  It's not very useful unless you want to play with different interpretation or compilation strategies.
-
-  **Note**: language regexes are specified in `sed` syntax, so languages like  `c++` don't need the `+` signs escaped. (Conversely, if you want to match one or more of something, use `\+`.)
 
 ## LICENSE
 

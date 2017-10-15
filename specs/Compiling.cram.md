@@ -190,11 +190,30 @@ You can use weird language tags:
     > EOF
     mdsh_raw_this_is_a_weird__one_+=($'blah\n')
 
-So long as they don't contain single quotes:
+Even if they contain single quotes:
 
     $ mdsh --compile - <<'EOF'
     > ```this is a 'weird $one!'
     > ```
+    > EOF
+    mdsh_raw_this_is_a__weird__one__+=('')
+
+But not if they have no language at all:
+
+    $ mdsh --compile - <<'EOF'
+    > ```
+    > X
+    > ```
+    > EOF
+
+Or are contained in a `~~~` block:
+
+    $ mdsh --compile - <<'EOF'
+    > ~~~xyz
+    > ```this is a weird $one!
+    > blah
+    > ```
+    > ~~~
     > EOF
 
 
