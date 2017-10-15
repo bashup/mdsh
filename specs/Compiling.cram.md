@@ -217,6 +217,23 @@ Or are contained in a `~~~` block:
     > EOF
 
 
+### Edge Cases
+
+Blocks that run off the end are ok, and blank lines/trailing whitespace are preserved:
+
+    $ mdsh --compile - <<'EOF'
+    > ```this is a weird $one!
+    > blah
+    > 
+    > 
+    > yada
+    >  
+    > 
+    > 
+    > EOF
+    mdsh_raw_this_is_a_weird__one_+=($'blah\n\n\nyada\n \n\n\n')
+
+
 ### Running Compiled Code
 
 Positional args are passed to the compiled code, and `$0 == $BASH_SOURCE`:

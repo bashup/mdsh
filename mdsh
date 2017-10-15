@@ -94,12 +94,12 @@ run-markdown() { source <(mdsh-compile <"$1") "${@:2}"; }
 
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
-    mdsh-parse __COMPILE__ "$(cat)"
+    REPLY=$(cat; echo -n _); mdsh-parse __COMPILE__ "${REPLY%_}"
 )
 
 mdsh-parse() {
     local cmd=$1 lang
-    IFS=$'\n' eval 'set -- $2'
+    IFS=$'\n' eval 'set -- ${2//'$'\n''/ '$'\n''}'; set -- "${@% }"
     while (($#)); do
         case $1 in
         '```'*)
@@ -130,7 +130,7 @@ __COMPILE__() {
     else
         printf "mdsh_raw_$lang+=(%q)\n" "$3"
     fi
-    if fn-exists mdsh-after-$lang; then mdsh-rewrite mdsh-after-$lang "$3"; fi
+    if fn-exists mdsh-after-$lang; then mdsh-rewrite mdsh-after-$lang; fi
 }
 
 mdsh-rewrite() {
