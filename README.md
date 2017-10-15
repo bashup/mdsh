@@ -41,7 +41,9 @@ Blocks tagged as `shell` are interpreted as bash code, and directly copied to th
 
 (Typically, you won't run `mdsh` directly, but will put `#!/usr/bin/env mdsh` on the first line of your markdown file instead, and make it executable with `chmod +x`.  That way, users of your script won't need to do anything special to run it.)
 
-You can also use `mdsh --compile` *file1 file2...* to translate one or more markdown files to bash code, sending the result to stdout.  This can be useful for debugging, or to make a distributable version of your script that does not require its users to have  `mdsh`.
+You can also use `mdsh --compile` *file1 file2...* to translate one or more markdown files to bash code, sending the result to stdout.  (A filename of `-` means "read from standard input".)  This can be useful for debugging, or to make a distributable version of your script that does not require its users to have `mdsh`.
+
+(There is also an `mdsh --eval` *filename* option, which is similar to `--compile`, but only takes one, non-stdin file, and emits special code at the end to support markdown files being sourced; see the section below on [Making Sourceable Scripts](#making-sourceable-scripts-and-handling-0) for more details.)
 
 ### Data Blocks
 
@@ -104,7 +106,7 @@ Finally, please remember that you shouldn't have *any* code in an `mdsh` block o
 
 Once you've gotten used to doing some `mdsh-lang-X` functions, why not try your hand at some `mdsh-compile` ones?
 
-For example, in the `jqmd` project, I originally had some code that looked like this:
+For example, in the [`jqmd` project](https://github.com/bashup/jqmd), I originally had some code that looked like this:
 
 ```bash
 YAML() { JSON "$(echo "$1" | yaml2json -)"; }
@@ -148,7 +150,7 @@ First, you can change the way you indicate certain code blocks.  All of these ar
 * Code blocks fenced with `~~~X` instead of `` ```X ``
 * Code blocks with no language tag
 
-Alternately, you can define empty `mdsh-compile-X` functions in an mdsh block, for each language you want to exclude from the compilation, or define an `mdsh-misc` function that does nothing.  (See the section on [Metaprogramming and Code Generation](#metaprogramming-and-code-generation), below, for more on `mdsh-misc`.)
+Alternately, you can define empty `mdsh-compile-X` functions in an mdsh block, for each language you want to exclude from the compilation, or define an `mdsh-misc` function that does nothing.  (Which will disable data blocks entirely; see the section on [Metaprogramming and Code Generation](#metaprogramming-and-code-generation) below for more info on `mdsh-misc`.)
 
 ### Making Executable (and Editable) Markdown Files
 
