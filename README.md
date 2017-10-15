@@ -89,11 +89,12 @@ These build rules are specified by defining specially-named bash functions.  Unl
 
 * An `mdsh-lang-X` function is a template for code to be run when a block of language `X` is encountered.  Its function body is copied to the translated script as a bash compound statment (i.e. in curly braces`{...}`) , that will execute with the block contents as a heredoc on its standard input.  (Its standard output is the same as the overall script's.)
 * An `mdsh-compile-X` function is invoked *at compile time* with the block contents as `$1`, and must output a bash source code translation of the block on its stdout.
+* If neither an `mdsh-lang-X` nor `mdsh-compile-X` function exists, `mdsh-misc` is invoked *at compile time* with the raw language tag as `$1` and the block contents as `$2`.  The output of `mdsh-misc` will be added to the compiled script.  (The default implementation of `mdsh-misc` outputs code to save the block contents in a variable, as described above in the [Data Blocks](#data-blocks) section, above.)
 * An `mdsh-after-X` function is a template for code to be run *after* a block of language `X` is encountered.  Its function body is copied to the translated script as a block just after the `mdsh-lang-X` body, `mdsh-compile-X` output, or `mdsh_raw_X+=(contents)` statement.  It does *not* receive the block source, so its standard input and output are those of the script itself.
 
 If both an `mdsh-lang-X` and `mdsh-compile-X` function exist, `mdsh-lang-X` takes precedence.  Defining either one also disables the `$mdsh_raw_X` functionality: only untranslatable "data" blocks are added to the arrays.
 
-If there is no `mdsh-lang-X` or `mdsh-compile-X` however, the `mdsh-after-X` function can read the most recent block's contents from `${mdsh_raw_X[-1]}`.  If you don't unset the array, it will keep growing as more blocks of that language are encountered.
+If there is no `mdsh-lang-X` or `mdsh-compile-X` however, the `mdsh-after-X` function can read the most recent block's contents from `${mdsh_raw_X[-1]}` (unless you've replaced the default `mdsh-misc` implementation).  If you don't unset the array, it will keep growing as more blocks of that language are encountered.
 
 Note: these function names are **case sensitive**, so a block tagged with an uppercase `C` will not trigger the same functions as a block tagged with a lowercase `c`, or vice-versa.  Also, note that because `mdsh` blocks are executed at compile time, they do **not** have access to the script's arguments or I/O: all you can do in them is define hook functions.
 
@@ -147,7 +148,7 @@ First, you can change the way you indicate certain code blocks.  All of these ar
 * Code blocks fenced with `~~~X` instead of `` ```X ``
 * Code blocks with no language tag
 
-Alternately, you can define empty `mdsh-compile-X` functions in an mdsh block, for each language you want to exclude from the compilation.
+Alternately, you can define empty `mdsh-compile-X` functions in an mdsh block, for each language you want to exclude from the compilation, or define an `mdsh-misc` function that does nothing.  (See the section on [Metaprogramming and Code Generation](#metaprogramming-and-code-generation), below, for more on `mdsh-misc`.)
 
 ### Making Executable (and Editable) Markdown Files
 
@@ -203,6 +204,34 @@ As a result, this file can be either run or `source`-d without any issues.  What
 That's because when you directly run or source the script, you're really executing the *same* code that would be compiled, in the same environment, with `$BASH_SOURCE` pointing to the actual file.  (And `$0` matching it, unless it's being sourced.)
 
 So why not use this method all the time?  Well, you certainly *can*.  And if you don't mind copying and pasting it into all your new scripts, then by all means go ahead!  However, an `mdsh` `#!` line is *definitely* the easier choice for one-off scripts that aren't being sourced, where you aren't using the value of `$0`, and you don't care about editor support.
+
+## Metaprogramming and Code Generation
+
+Any output from a `mdsh`-tagged block becomes part of the generated bash script at the point where the block occurs.  This means that you can simply `cat` other bash files to include them, or do anything else you like to generate code there.  This can be a useful alternative to using `source` to load functions, as it means that the resulting script can be `--compile`d to a single file that doesn't need the other modules present.
+
+If you want to programmatically process individual blocks in some fashion (for example, to extract filenames from their language tags), you can define an `mdsh-misc` function.  For each block without an `mdsh-lang-X ` or `mdsh-compile-X` function, `mdsh-misc` is called with the language tag and block contents as arguments, and its output is appended to the compiled script at that point in the file.
+
+So for example, when run, this script outputs the contents of the text block to `file1.txt`:
+
+~~~markdown
+​```mdsh
+mdsh-misc() {
+    if [[ $1 == *'>'* ]]; then echo -n "$2" >"${1#*>}"; fi
+}
+​```
+
+​```text >file1.txt
+Some text goes here!
+​```
+~~~
+
+Of course, the possible applications of `mdsh-misc` are considerably more varied than just writing blocks to files.  You could, for example:
+
+* Emulate the "tangling" features of other literate programming tools (by having `mdsh-misc` save the contents of blocks to different variables based on their tag information, and then ending your program with an `mdsh` block that outputs the saved blocks in the desired order)
+* Interpret tags as arguments for how a block should be processed
+* Treat blocks tags starting with `|` as a pipeline to preprocess the block with
+
+...and just about anything else you can imagine.
 
 ## Extending `mdsh` or Reusing its Functions
 

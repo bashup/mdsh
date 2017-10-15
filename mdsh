@@ -121,6 +121,9 @@ mdsh-compile-()      { :; }
 mdsh-compile-mdsh()  { eval "$1"; }
 mdsh-compile-shell() { printf '%s' "$1"; }
 
+mdsh-data() { printf "mdsh_raw_${1//[^_[:alnum:]]/_}+=(%q)\n" "$2"; }
+mdsh-misc() { mdsh-data "$@"; }
+
 __COMPILE__() {
     local lang="${2//[^_[:alnum:]]/_}"
     if fn-exists mdsh-lang-$lang; then
@@ -128,7 +131,7 @@ __COMPILE__() {
     elif fn-exists mdsh-compile-$lang; then
         mdsh-compile-$lang "$3"
     else
-        printf "mdsh_raw_$lang+=(%q)\n" "$3"
+        mdsh-misc "$2" "$3"
     fi
     if fn-exists mdsh-after-$lang; then mdsh-rewrite mdsh-after-$lang; fi
 }
@@ -154,11 +157,8 @@ markdown-to-shell() {
 extract-markdown() { extract-between '^```'"$1"'$' '^```$' "${@:2}"; }
 extract-between() { sed -ne '/'"$1"'/,/'"$2"'/ { s/\('"$1"'\)/'"${3-}"'/; s/'"$2"'/'"${4-}"'/; p;}'; }
 
-
 # --- All functions have been defined, main script starts here! ---
 
 # check bash-source and run main only if directly executing
 if [[ "$0" == "${BASH_SOURCE[0]}" ]]; then mdsh-main "$@"; exit $?; fi
-
-
 

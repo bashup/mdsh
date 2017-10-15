@@ -19,3 +19,8 @@ And then we run the result with mdsh:
     
 
 (Notice that the output for each data block includes the line feed that terminated it.)
+
+Also, one of the examples creates a file:
+
+    $ cat file1.txt
+    Some text goes here!
