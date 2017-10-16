@@ -97,22 +97,22 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     REPLY=$(cat; echo -n _); mdsh-parse __COMPILE__ "${REPLY%_}"
 )
 
+mdsh-read() { # read line from variable $1, reply in variable $2 (or REPLY)
+    [[ ${!1} && ${!1} =~ ^([^$'\n']*)($'\n'|$) ]] || return 1
+    printf -v "${2-REPLY}" %s "${BASH_REMATCH[1]}"
+    printf -v "$1"         %s "${!1#"$BASH_REMATCH"}"
+}
 mdsh-parse() {
-    local cmd=$1 lang
-    IFS=$'\n' eval 'set -- ${2//'$'\n''/ '$'\n''}'; set -- "${@% }"
-    while (($#)); do
-        case $1 in
+    local cmd=$1 lang block md=$2 ln
+    while mdsh-read md ln; do
+        case $ln in
         '```'*)
-            lang=${1#'```'}; shift; block=
-            while (($#)) && [[ $1 != '```' ]]; do
-                block+=$1$'\n'; shift
-            done
+            lang=${ln#'```'}; block=
+            while mdsh-read md ln && [[ $ln != '```' ]]; do block+=$ln$'\n'; done
             "$cmd" '```' "$lang" "$block"
-            ! (($#)) || shift
             ;;
         '~~~'*)
-            shift; while (($#)) && [[ $1 != '~~~'* ]]; do shift; done ;;
-        *)  shift ;;
+            while mdsh-read md ln && [[ $ln != '~~~'* ]]; do :; done ;;
         esac
     done
 }
