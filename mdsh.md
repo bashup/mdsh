@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 : '
 <!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; return $? # -->
-# mdsh: a self-hosted Markdown Interpreter
+# mdsh: a self-hosted Markdown-to-Shell Compiler
 
-``mdsh`` is an interpreter for literate programs written in markdown and bash, that is itself written as a literate program in markdown and bash.  It expects to run in "bash strict mode".
+``mdsh`` is a compiler and interpreter for literate programs written in markdown and bash, that is itself written as a literate program in markdown and bash.  It expects to run in "bash strict mode":
 
 ```shell
 #!/usr/bin/env bash
@@ -11,7 +11,7 @@
 set -euo pipefail  # Strict mode
 ```
 
-and it includes a license header for distribution:
+And it includes a license header in the compiled distribution (see [LICENSE](license) file for the terms that apply to this source file as well as the compiled version):
 
 ```mdsh
 # incorporate the LICENSE file as bash comments
