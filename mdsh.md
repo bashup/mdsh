@@ -13,7 +13,7 @@ set -euo pipefail  # Strict mode
 
 And it includes a license header in the compiled distribution (see [LICENSE](LICENSE) file for the terms that apply to this source file as well as the compiled version):
 
-```mdsh
+```shell mdsh
 # incorporate the LICENSE file as bash comments
 source realpaths; realpath.location "$MDSH_SOURCE"; sed -e 's/^\(.\)/# \1/' "$REPLY/LICENSE"
 ```
@@ -129,6 +129,14 @@ Data blocks are processed by emitting code to add the block contents to an `mdsh
 ```shell
 mdsh-data() {
     printf "mdsh_raw_${1//[^_[:alnum:]]/_}+=(%q)\n" "$2"
+}
+```
+
+And for syntax highlighting convenience, `shell mdsh` blocks are treated as `mdsh` blocks:
+
+```shell
+mdsh-compile-shell_mdsh() {
+    __COMPILE__ backquote-fenced mdsh "$1"
 }
 ```
 

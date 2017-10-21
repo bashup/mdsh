@@ -252,6 +252,15 @@ You can define handlers for empty languages, too:
     > EOF
     this is a test
 
+And `shell mdsh` blocks are treated the same as plain `mdsh` blocks:
+
+    $ mdsh --compile - <<'EOF'
+    > ```shell mdsh
+    > echo "Hello from mdsh!"
+    > ```
+    > EOF
+    Hello from mdsh!
+
 
 ### Running Compiled Code
 

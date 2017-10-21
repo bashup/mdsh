@@ -77,6 +77,9 @@ mdsh-compile-shell() { printf '%s' "$1"; }  # Copy `shell` blocks to the output
 mdsh-data() {
     printf "mdsh_raw_${1//[^_[:alnum:]]/_}+=(%q)\n" "$2"
 }
+mdsh-compile-shell_mdsh() {
+    __COMPILE__ backquote-fenced mdsh "$1"
+}
 # Main program: check for arguments and run markdown script
 mdsh-main() {
     (($#)) || mdsh-error "Usage: %s [ --compile | --eval ] markdownfile [args...]" "$0"

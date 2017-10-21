@@ -207,6 +207,16 @@ That's because when you directly run or source the script, you're really executi
 
 So why not use this method all the time?  Well, you certainly *can*.  And if you don't mind copying and pasting it into all your new scripts, then by all means go ahead!  However, an `mdsh` `#!` line is *definitely* the easier choice for one-off scripts that aren't being sourced, where you aren't using the value of `$0`, and you don't care about editor support.
 
+### Syntax Highlighting of `mdsh` blocks
+
+Because `mdsh` is not a widely-recognized language, Github and other markdown editing/processing tools generally don't know how to highlight them properly.  As a workaround, you can give a block tag of `shell mdsh` , which most tools will then interpret as a shell block for highlighting purposes.  e.g.:
+
+~~~markdown
+​```shell mdsh
+echo 'echo "Most tools will highlight this block as shell script"'
+​```
+~~~
+
 ## Metaprogramming and Code Generation
 
 Any output from a `mdsh`-tagged block becomes part of the generated bash script at the point where the block occurs.  This means that you can simply `cat` other bash files to include them, or do anything else you like to generate code there.  This can be a useful alternative to using `source` to load functions, as it means that the resulting script can be `--compile`d to a single file that doesn't need the other modules present.
