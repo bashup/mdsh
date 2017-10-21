@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # ---
 # Add your own commands, functions, and variables here.  Define defaults first,
-# then `import:` the desired devkit modules, and then define any overrides to
+# then `dk use:` the desired devkit modules, and then define any overrides to
 # the devkit defaults.
 # ---
 
 # Available modules (uncomment to use):
 
-import: dk.cram                  # run tests using the "cram" functional test tool
-import: dk.entr-watch            # watch files and re-run tests or other commands
-import: dk.shell-console         # make the "console" command enter a subshell
+dk use: cram                  # run tests using the "cram" functional test tool
+dk use: entr-watch            # watch files and re-run tests or other commands
+dk use: shell-console         # make the "console" command enter a subshell
 
 # Define overrides, new commands, functions, etc. here:
 
