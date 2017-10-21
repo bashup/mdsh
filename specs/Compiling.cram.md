@@ -4,7 +4,8 @@
 
 Our fixture and helper:
 
-    $ mdsh() { $TESTDIR/../mdsh "$@"; }
+    $ ln -s $TESTDIR/../mdsh.md mdsh
+    $ mdsh() { ./mdsh "$@"; }
     $ cat >t1.md <<'EOF'
     > ```shell
     > echo yep
@@ -104,7 +105,7 @@ Unrecognized languages append to a variable:
 
 Languages with a runtime function get embedded, and mdsh blocks are executed silently:
 
-    $ source $TESTDIR/../mdsh   # test `mdsh-compile` directly to check subshell functionality
+    $ source $TESTDIR/../mdsh.md   # test `mdsh-compile` directly to check subshell functionality
     $ mdsh-compile <<'EOF'
     > ```mdsh
     > mdsh-lang-python() { python; }

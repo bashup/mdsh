@@ -31,7 +31,7 @@ print("hello world!")
 
 ## Installation
 
-If you have [basher](https://github.com/basherpm/basher), you can install `mdsh` by running `basher install bashup/mdsh`.  Otherwise just clone this repo and copy or link the `mdsh` file to a directory on your `PATH`.  (Or just [download the script directly](https://github.com/bashup/mdsh/raw/master/mdsh) to a directory on your `PATH`.)
+If you have [basher](https://github.com/basherpm/basher), you can install `mdsh` by running `basher install bashup/mdsh`.  Otherwise just clone this repo and copy or link the `mdsh` file to a directory on your `PATH`.  (Or just [download the script directly](https://github.com/bashup/mdsh/raw/master/bin/mdsh) to a directory on your `PATH`.)
 
 ## Usage
 

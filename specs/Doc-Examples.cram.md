@@ -7,7 +7,7 @@ This file verifies that the markdown examples in the README work as advertised. 
 
 And then we run the result with mdsh:
 
-    $ $TESTDIR/../mdsh demo.md
+    $ $TESTDIR/../mdsh.md demo.md
     hello world!
     { "hello": "world" }
     
