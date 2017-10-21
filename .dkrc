@@ -7,8 +7,8 @@
 
 # Available modules (uncomment to use):
 
-import: cram                  # run tests using the "cram" functional test tool
-import: entr-watch            # watch files and re-run tests or other commands
-import: shell-console         # make the "console" command enter a subshell
+import: dk.cram                  # run tests using the "cram" functional test tool
+import: dk.entr-watch            # watch files and re-run tests or other commands
+import: dk.shell-console         # make the "console" command enter a subshell
 
 # Define overrides, new commands, functions, etc. here:
