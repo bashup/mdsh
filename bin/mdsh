@@ -49,7 +49,7 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     REPLY=$(cat; echo -n _); mdsh-parse __COMPILE__ "${REPLY%_}"
 )
 __COMPILE__() {
-    [[ $1 == backquote-fenced  && $2 ]] || return 0  # only fenced code
+    [[ $1 == backquote-fenced ]] || return 0  # only fenced code
     local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
 
     if fn-exists mdsh-lang-$lang; then

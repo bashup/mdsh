@@ -78,7 +78,7 @@ The actual "compilation" consists simply of parsing the file contents using the 
 
 ```shell
 __COMPILE__() {
-    [[ $1 == backquote-fenced  && $2 ]] || return 0  # only fenced code
+    [[ $1 == backquote-fenced ]] || return 0  # only fenced code
     local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
 
     if fn-exists mdsh-lang-$lang; then
@@ -115,7 +115,7 @@ mdsh-rewrite() {
 
 ### Default Languages and Data Handling
 
-By default, `mdsh` supports only `mdsh` and `shell` blocks, with everything else handled as data.  Blocks with no language, however are ignored:
+By default, `mdsh` supports only `mdsh` and `shell` blocks, with everything else handled as data.  Blocks with no language, however, are ignored:
 
 ```shell
 mdsh-misc()          { mdsh-data "$@"; }    # Treat unknown languages as data

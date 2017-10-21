@@ -240,6 +240,18 @@ Blocks that run off the end are ok, and blank lines/trailing whitespace are pres
     > EOF
     mdsh_raw_this_is_a_weird__one_+=($'blah\n\n\nyada\n \n\n\n')
 
+You can define handlers for empty languages, too:
+
+    $ mdsh --compile - <<'EOF'
+    > ```mdsh
+    > mdsh-compile-() { printf %s "$1"; }
+    > ```
+    > ```
+    > this is a test
+    > ```
+    > EOF
+    this is a test
+
 
 ### Running Compiled Code
 
