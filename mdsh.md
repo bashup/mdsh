@@ -11,7 +11,7 @@
 set -euo pipefail  # Strict mode
 ```
 
-And it includes a license header in the compiled distribution (see [LICENSE](license) file for the terms that apply to this source file as well as the compiled version):
+And it includes a license header in the compiled distribution (see [LICENSE](LICENSE) file for the terms that apply to this source file as well as the compiled version):
 
 ```mdsh
 # incorporate the LICENSE file as bash comments
