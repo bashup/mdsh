@@ -1,43 +1,46 @@
 ## Extending mdsh
 
+It should be possible to extend mdsh by sourcing it:
+
     $ cat >foosh <<'EOF'
     > #!/usr/bin/env bash
     > source ./mdsh
-    > mdsh:file-header() { echo "# header"; }
-    > mdsh:file-footer() { echo "# footer"; }
+    > mdsh:file-header() { echo 'echo "# header"'; }
+    > mdsh:file-footer() { echo 'echo "# footer"'; }
     > if [[ $0 == $BASH_SOURCE ]]; then mdsh-main "$@"; fi
     > EOF
-
-
     $ chmod +x foosh
     $ ln -s "$TESTDIR/../mdsh.md" mdsh
+
+And the result should give error/help messages under its new name:
+
     $ ./foosh
-    Usage: ./foosh [ --compile | --eval ] markdownfile [args...]
+    Usage: foosh [ --compile | --eval ] markdownfile [args...]
     [64]
 
+And the extended program's mdsh:file-header and mdsh:file-footer will wrap anything done with it:
 
-    $ cat >t1.md <<'EOF'
-    > ```shell
-    > echo yep
-    > ```
-    > EOF
+    $ cat >t1.md <<<$'```shell\necho t1.md\n```'
 
-
-    $ ./foosh --compile t1.md
+    $ ./foosh t1.md
     # header
-    echo yep
+    t1.md
     # footer
 
+With the header and footer appearing before and after the *entire* compiled file list:
 
-    $ ./foosh -c t1.md
-    # header
-    echo yep
-    # footer
+    $ ./foosh --compile <(echo $'```shell\n# file 1 here\n```') t1.md <(echo $'```shell\n# file 3 here\n```')
+    echo "# header"
+    # file 1 here
+    echo t1.md
+    # file 3 here
+    echo "# footer"
 
+But *before* the eval footer:
 
     $ ./foosh --eval t1.md
-    # header
-    echo yep
-    # footer
+    echo "# header"
+    echo t1.md
+    echo "# footer"
     __status=$? eval 'return $__status || exit $__status' 2>/dev/null
 

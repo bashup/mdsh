@@ -82,11 +82,11 @@ mdsh-compile-shell_mdsh() {
 }
 # Main program: check for arguments and run markdown script
 mdsh-main() {
-    (($#)) || mdsh-error "Usage: %s [ --compile | --eval ] markdownfile [args...]" "$0"
+    (($#)) || mdsh-error "Usage: %s [ --compile | --eval ] markdownfile [args...]" "${0#*/}"
     case "$1" in
     --) mdsh-interpret "${@:2}" ;;
     -)  mdsh-interpret "$@" ;;
-    -*) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "$0" "$1"
+    -*) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0#*/}" "$1"
         "mdsh.$1" "${@:2}"
         ;;
     *)  mdsh-interpret "$@" ;;
@@ -100,7 +100,7 @@ function mdsh-interpret() {
     MDSH_ZERO="$1" exec bash -c "$cmd" "" "${@:2}"
 }
 mdsh.--compile() {
-    (($#)) || mdsh-error "Usage: %s --compile FILENAME..." "$0"
+    (($#)) || mdsh-error "Usage: %s --compile FILENAME..." "${0#*/}"
     ! fn-exists mdsh:file-header || mdsh:file-header
     for f; do MDSH_SOURCE=$f mdsh-compile "$f"; done
     ! fn-exists mdsh:file-footer || mdsh:file-footer
@@ -109,7 +109,7 @@ mdsh.--compile() {
 mdsh.-c() { mdsh.--compile "$@"; }
 mdsh.--eval() {
     (($# == 1)) && [[ $1 != - ]] ||
-        mdsh-error "Usage: %s --eval FILENAME" "$0"
+        mdsh-error "Usage: %s --eval FILENAME" "${0#*/}"
     mdsh.--compile "$1"
     echo "__status=\$? eval 'return \$__status || exit \$__status' 2>/dev/null"
 }
@@ -118,7 +118,7 @@ mdsh.-E() { mdsh.--eval "$@"; }
 # mdsh-error: printf args to stderr and exit w/EX_USAGE (code 64)
 mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 mdsh.--help() {
-    printf "Usage: %s [ --compile | --eval ] markdownfile [args...]\n" "$0"
+    printf "Usage: %s [ --compile | --eval ] markdownfile [args...]\n" "${0#*/}"
     echo -e '
 Run and/or compile code blocks from markdownfile(s) to bash.
 Use a filename of `-` to run or compile from stdin.

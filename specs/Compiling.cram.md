@@ -51,27 +51,27 @@ Errors:
 
 
     $ mdsh
-    Usage: */mdsh [ --compile | --eval ] markdownfile [args...] (glob)
+    Usage: mdsh [ --compile | --eval ] markdownfile [args...]
     [64]
     $ mdsh --compile
-    Usage: */mdsh --compile FILENAME... (glob)
+    Usage: mdsh --compile FILENAME...
     [64]
     $ mdsh --eval
-    Usage: */mdsh --eval FILENAME (glob)
+    Usage: mdsh --eval FILENAME
     [64]
     $ mdsh --eval - </dev/null
-    Usage: */mdsh --eval FILENAME (glob)
+    Usage: mdsh --eval FILENAME
     [64]
     $ mdsh --compiler
-    */mdsh: unrecognized option: --compiler (glob)
+    mdsh: unrecognized option: --compiler
     [64]
     $ mdsh -- --compile t1.md
-    */mdsh: line *: --compile: No such file or directory (glob)
+    ./mdsh: line *: --compile: No such file or directory (glob)
 
 Help:
 
     $ mdsh --help
-    Usage: */mdsh [ --compile | --eval ] markdownfile [args...] (glob)
+    Usage: mdsh [ --compile | --eval ] markdownfile [args...]
     
     Run and/or compile code blocks from markdownfile(s) to bash.
     Use a filename of `-` to run or compile from stdin.
