@@ -23,6 +23,31 @@ echo; sed -e '1,2d; s/^\(.\)/# \1/; s/^$/#/;' "$REPLY/LICENSE"; echo
 
 **IMPORTANT**: just because a function is named `mdsh-something` and explained in this document does not make it a published API function!  If it's not documented in the README, consider it a private implementation detail
 
+### Contents
+
+<!-- toc -->
+
+- [Parsing](#parsing)
+  * [Line Reader](#line-reader)
+  * [Parser](#parser)
+- [Compiler](#compiler)
+  * [Code Block Handling](#code-block-handling)
+    + [fn-exists](#fn-exists)
+    + [mdsh-rewrite](#mdsh-rewrite)
+  * [Default Languages and Data Handling](#default-languages-and-data-handling)
+- [Command-Line Interface](#command-line-interface)
+  * [Interpreting Files](#interpreting-files)
+  * [--compile (-c)](#--compile--c)
+  * [--eval (-E)](#--eval--e)
+  * [Usage Errors](#usage-errors)
+  * [Help (-h and --help)](#help--h-and---help)
+- [Utilities and Startup](#utilities-and-startup)
+  * [run-markdown](#run-markdown)
+  * [Deprecated Functions](#deprecated-functions)
+  * [Run Main](#run-main)
+
+<!-- tocstop -->
+
 ## Parsing
 
 ### Line Reader
