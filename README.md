@@ -47,7 +47,6 @@ print("hello world!")
   * [Adding File Headers or Footers](#adding-file-headers-or-footers)
   * [Altering Existing Functions](#altering-existing-functions)
   * [Available Functions](#available-functions)
-- [LICENSE](#license)
 
 <!-- tocstop -->
 
@@ -320,15 +319,4 @@ The following functions are available for your use or alteration in scripts sour
 * `mdsh-rewrite` *function* *before* *after* -- output the body block of *function* on stdout, optionally replacing the opening and closing braces with *before* and *after*.  (If you're using this to "edit" a function, remember that the replacements must include the opening and closing braces, and the closing brace must be preceded by either a newline or a semicolon or space.)
 
 * `markdown-to-shell` *command language_regexes...* -- **DEPRECATED**: in earlier versions of  `mdsh`, this function was the "compiler", and then a prepropcessor for the compiler, but now it's no longer used, and will be removed in a future version.
-
-
-## LICENSE
-
-Copyright 2017 PJ Eby
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT OWNERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
