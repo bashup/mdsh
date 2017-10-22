@@ -180,7 +180,9 @@ Compile one or more files, appending the results to stdout.  `mdsh` blocks in ea
 ```shell
 mdsh.--compile() {
     (($#)) || mdsh-error "Usage: %s --compile FILENAME..." "$0"
+    ! fn-exists mdsh:file-header || mdsh:file-header
     for f; do MDSH_SOURCE=$f mdsh-compile "$f"; done
+    ! fn-exists mdsh:file-footer || mdsh:file-footer
 }
 
 mdsh.-c() { mdsh.--compile "$@"; }

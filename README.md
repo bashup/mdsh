@@ -44,6 +44,8 @@ print("hello world!")
   * [Syntax Highlighting of `mdsh` blocks](#syntax-highlighting-of-mdsh-blocks)
 - [Metaprogramming and Code Generation](#metaprogramming-and-code-generation)
 - [Extending `mdsh` or Reusing its Functions](#extending-mdsh-or-reusing-its-functions)
+  * [Adding File Headers or Footers](#adding-file-headers-or-footers)
+  * [Altering Existing Functions](#altering-existing-functions)
   * [Available Functions](#available-functions)
 - [LICENSE](#license)
 
@@ -288,6 +290,12 @@ mdsh-compile-somelang() {
 ```
 
 That is, just source mdsh and define your additional language handlers, then run `mdsh-main "$@"`: your script will then have the same command-line interface as `mdsh`, but all its help messages will refer to the name of your script, instead of `mdsh`.
+
+### Adding File Headers or Footers
+
+If your extended version of mdsh needs to add headers or footers to generated files, you can define functions named `mdsh:file-header` and/or `mdsh:file-footer`.  The `--compile` option will call these functions once at the start and end of the compilation process, wrapping the entire output.  `--eval` will works similarly, except that the `--eval` footer will appear *after* `mdsh:file-footer`.
+
+### Altering Existing Functions
 
 In some cases, you may wish to also alter parts of mdsh's behavior, by replacing some of its functions.  You can, however, avoid the need to copy those function into your code by using `mdsh-rewrite`.  `mdsh-rewrite` is a function normally used in the mdsh compiler to rewrite `mdsh-lang-X` and `mdsh-after-X` function bodies, but you can adapt it to do AOP-like editing of bash functions.
 
