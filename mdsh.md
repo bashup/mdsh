@@ -42,6 +42,7 @@ echo; sed -e '1,2d; s/^\(.\)/# \1/; s/^$/#/;' "$REPLY/LICENSE"; echo
   * [Usage Errors](#usage-errors)
   * [Help (-h and --help)](#help--h-and---help)
 - [Utilities and Startup](#utilities-and-startup)
+  * [mdsh-embed](#mdsh-embed)
   * [run-markdown](#run-markdown)
   * [Deprecated Functions](#deprecated-functions)
   * [Run Main](#run-main)
@@ -257,6 +258,24 @@ mdsh.-h() { mdsh.--help "$@"; }
 ```
 
 ## Utilities and Startup
+
+### mdsh-embed
+
+Embed a module's source in such a way that it believes itself to be `source`d when executed.
+
+```shell
+mdsh-embed() {
+    local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=
+    [[ $f == */* && -f $f ]] || f=$(command -v "$f") || {
+        echo "Can't find module $1" >&2; return 69  # EX_UNAVAILABLE
+    }
+    contents=$'\n'$(<"$f")$'\n'
+    while [[ $contents == *$'\n'"$boundary"$'\n'* ]]; do
+        let ctr++; boundary="# --- EOF $base.$ctr ---"
+    done
+    printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
+}
+```
 
 ### run-markdown
 

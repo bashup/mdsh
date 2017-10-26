@@ -43,6 +43,7 @@ print("hello world!")
   * [Making Sourceable Scripts (and handling $0)](#making-sourceable-scripts-and-handling-0)
   * [Syntax Highlighting of `mdsh` blocks](#syntax-highlighting-of-mdsh-blocks)
 - [Metaprogramming and Code Generation](#metaprogramming-and-code-generation)
+  * ["Static Linking" for Distribution](#static-linking-for-distribution)
 - [Extending `mdsh` or Reusing its Functions](#extending-mdsh-or-reusing-its-functions)
   * [Adding File Headers or Footers](#adding-file-headers-or-footers)
   * [Altering Existing Functions](#altering-existing-functions)
@@ -240,7 +241,7 @@ echo 'echo "Most tools will highlight this block as shell script"'
 
 ## Metaprogramming and Code Generation
 
-Any output from a `mdsh`-tagged block becomes part of the generated bash script at the point where the block occurs.  This means that you can simply `cat` other bash files to include them, or do anything else you like to generate code there.  This can be a useful alternative to using `source` to load functions, as it means that the resulting script can be `--compile`d to a single file that doesn't need the other modules present.
+Any output from a `mdsh`-tagged block becomes part of the generated bash script at the point where the block occurs.  This means that you can simply `cat` other bash files to include them (or use `mdsh-embed`; see the next section), or do anything else you like to generate code there.  This can be a useful alternative to using `source` to load functions, as it means that the resulting script can be `--compile`d to a single file that doesn't need the other modules present.
 
 If you want to programmatically process individual blocks in some fashion (for example, to extract filenames from their language tags), you can define an `mdsh-misc` function.  For each block without an `mdsh-lang-X ` or `mdsh-compile-X` function, `mdsh-misc` is called with the language tag and block contents as arguments, and its output is appended to the compiled script at that point in the file.
 
@@ -265,6 +266,12 @@ Of course, the possible applications of `mdsh-misc` are considerably more varied
 * Treat blocks tags starting with `|` as a pipeline to preprocess the block with
 
 ...and just about anything else you can imagine.
+
+### "Static Linking" for Distribution
+
+You can use the `mdsh-embed` function to embed the source of other modules into your script.  Calling `mdsh-embed` *modulename* inside an `mdsh` block will search `PATH` for *modulename* (unless *modulename* contains a `/`), and then output its source code, wrapped in a heredoc and `source` command.  (This ensures that the embedded module will know it was sourced, and not via the command line, even if the embedding script *was* run from the command line.)
+
+The net result is that by using `mdsh-embed` in your `mdsh` block(s) to load your modules (instead of `source` inside your `shell` blocks), you gain the ability to `--compile` your script to a "statically-linked executable".  That is, you can create a single file that contains all the modules it needs, so your users don't have to install all your dependencies themselves, and don't need a specific package manager to install your script.
 
 ## Extending `mdsh` or Reusing its Functions
 
@@ -311,12 +318,9 @@ eval "mdsh.--compile() $(mdsh-rewrite mdsh.--compile '{ jqmd-header;' 'jqmd-foot
 The following functions are available for your use or alteration in scripts sourcing `mdsh`:
 
 * `run-markdown` *mdfile args...* -- execute the specified markdown file with *args* as its positional arguments (`$1`,  `$2`, etc.)  Use this instead of `mdsh-main` if you just want to interepret some markdown and maybe pass it some arguments: it's really just shorthand for `source <(mdsh-compile mdfile) args...`.
-
 * `mdsh-error` *format args...* --`printf` *format args* to stderr and terminate the process with errorlevel 64 ([EX_USAGE](https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3#DESCRIPTION)) .  (A linefeed is added to the format string automatically.)
-
 * `mdsh-compile` -- accepts markdown on stdin and outputs bash code on stdout.  The compilation takes place in a subshell, so hook functions defined in the code being compiled do **not** affect the caller's environment.  Hook functions *already* defined in the caller's environment, however, will be used to translate blocks of the relevant languages.
-
+* `mdsh-embed` *modulename* -- look for *modulename* on `PATH` (unless it contains a `/`), and dump its contents wrapped in a `source` command and heredoc.  Returns failure if *modulename* isn't found or can't be read.  (Note: unlike Bash's `source` command, this function does **not** fall back to looking for the module in the current directory.  If you want a file in the current directory, use `./modulename`).
 * `mdsh-rewrite` *function* *before* *after* -- output the body block of *function* on stdout, optionally replacing the opening and closing braces with *before* and *after*.  (If you're using this to "edit" a function, remember that the replacements must include the opening and closing braces, and the closing brace must be preceded by either a newline or a semicolon or space.)
-
 * `markdown-to-shell` *command language_regexes...* -- **DEPRECATED**: in earlier versions of  `mdsh`, this function was the "compiler", and then a prepropcessor for the compiler, but now it's no longer used, and will be removed in a future version.
 
