@@ -164,6 +164,23 @@ Notice the use of `printf` with `%q` -- this results in the data being properly 
 
 Notice too, by the way, that `compile` functions get access to the actual block text, which means that you can do any sort of code generation you like.  For example, I could have taken the output of `yaml2json`, and run `jq` over it, then looped over the output and written bash code to set variables based on the result, or generated code for subcommands based on the specification, or maybe even generated an argument parser from it.  There are all sorts of interesting possibilities for these kinds of code generation techniques!
 
+### Literate Testing
+
+Documents created with mdsh can be tested using the [cram](https://bitheap.org/cram/) functional testing tool.  Just set cram's indent level to 4 and use 4-space indented blocks for your cram-tested examples, optionally wrapped in `~~~` fenced code blocks like this:
+
+~~~shell
+    $ echo "hello world!"
+    hello world!
+~~~
+
+Cram looks for `$` or `>` and a space, indented to a certain level, then runs the command(s) and verifies the output.  So cram needs to know what indentation you're using.
+
+mdsh ignores 4-space indented and `~~~` fenced blocks, so it won't be confused by your examples.  You can get github to syntax-highlight your examples by including a language tag like `~~~bash` or `~~~shell`.
+
+Explaining all the ins and outs of using cram is beyond the scope of this guide, but in the simplest case, using `cram --indent 4 mydocument.md` will run any 4-space indented examples in `mydocument.md`.
+
+(Note that `cram` does not actually understand markdown, so it will try to run anything that begins with `"$ "` or `"> "` at the specified indent.  Non-example code that starts that way can typically be outdented slightly or indented further so that cram will ignore it.)
+
 ### Excluding Blocks From The Generated Script
 
 If your script has a lot of documentation examples that contain fenced code blocks, you may want to exclude these from being processed or copied to bash variables.  There are two main ways you can do this.
