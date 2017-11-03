@@ -16,6 +16,5 @@ dk use: shell-console         # make the "console" command enter a subshell
 dk.build() {
     dk test || abort "tests failed; not building" $?
     require realpaths basher install bashup/realpaths
-    REPLY=$(bin/mdsh --compile mdsh.md) || abort "compile failed with $?" $?
-    echo "$REPLY" >bin/mdsh
+    bin/mdsh --out bin/mdsh --compile mdsh.md
 }

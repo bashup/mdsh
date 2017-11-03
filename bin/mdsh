@@ -77,13 +77,13 @@ mdsh-compile-shell_mdsh() {
 }
 # Main program: check for arguments and run markdown script
 mdsh-main() {
-    (($#)) || mdsh-error "Usage: %s [ --compile | --eval ] markdownfile [args...]" "${0#*/}"
+    (($#)) || mdsh-error "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]" "${0#*/}"
     case "$1" in
     --) mdsh-interpret "${@:2}" ;;
-    -)  mdsh-interpret "$@" ;;
-    -*) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0#*/}" "$1"
+    --*|-?) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0#*/}" "$1"
         "mdsh.$1" "${@:2}"
         ;;
+    -??*) mdsh-main "${1::2}" "-${1:2}" "${@:2}" ;;  # split '-abc' into '-a -bc' and recurse
     *)  mdsh-interpret "$@" ;;
     esac
 }
@@ -110,10 +110,18 @@ mdsh.--eval() {
 }
 
 mdsh.-E() { mdsh.--eval "$@"; }
+mdsh.--out() {
+    if REPLY=("$(mdsh-main "${@:2}")"); then
+        echo "$REPLY" >"$1";
+    else exit $?;
+    fi
+}
+
+mdsh.-o() { mdsh.--out "$@"; }
 # mdsh-error: printf args to stderr and exit w/EX_USAGE (code 64)
 mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 mdsh.--help() {
-    printf "Usage: %s [ --compile | --eval ] markdownfile [args...]\n" "${0#*/}"
+    printf "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n" "${0#*/}"
     echo -e '
 Run and/or compile code blocks from markdownfile(s) to bash.
 Use a filename of `-` to run or compile from stdin.
@@ -125,6 +133,17 @@ Options:
 }
 
 mdsh.-h() { mdsh.--help "$@"; }
+mdsh-embed() {
+    local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=
+    [[ $f == */* && -f $f ]] || f=$(command -v "$f") || {
+        echo "Can't find module $1" >&2; return 69  # EX_UNAVAILABLE
+    }
+    contents=$'\n'$(<"$f")$'\n'
+    while [[ $contents == *$'\n'"$boundary"$'\n'* ]]; do
+        let ctr++; boundary="# --- EOF $base.$ctr ---"
+    done
+    printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
+}
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() { source <(mdsh-compile <"$1") "${@:2}"; }
