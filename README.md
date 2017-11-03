@@ -67,6 +67,8 @@ You can also use `mdsh --compile` *file1 file2...* to translate one or more mark
 
 (There is also an `mdsh --eval` *filename* option, which is similar to `--compile`, but only takes one, non-stdin file, and emits special code at the end to support markdown files being sourced; see the section below on [Making Sourceable Scripts](#making-sourceable-scripts-and-handling-0) for more details.)
 
+Both `--eval` and `--compile` can be preceded with `--out` *filename*, in which case *filename*'s contents will be replaced with `mdsh`'s output, if and only if the compilation or run succeeds without any errors.  (The output is buffered in-memory, then output all at once upon successful completion.   If the file already existed, its permissions will remain unchanged.)
+
 ### Data Blocks
 
 The contents of blocks that are *not* tagged `shell` or `mdsh` are treated as *data* by default: their contents are added to bash arrays named according to the language on the block, e.g.:

@@ -171,18 +171,18 @@ mdsh-compile-shell_mdsh() {
 
 ## Command-Line Interface
 
-The command line interface looks for functions named `mdsh.OPT` to process options of a matching name, and gives a usage error if such an option isn't found.  An option of `--` means "run the file that follows", while a `-` by itself is interpreted as "interpret standard input".  A non-option argument is treated as a file to interpret.
+The command line interface looks for functions named `mdsh.OPT` to process options of a matching name, and gives a usage error if such an option isn't found.  An option of `--` means "run the file that follows", while a `-` by itself is interpreted as "interpret standard input".  A non-option argument is treated as a file to interpret.  Multiple short options are processed by splitting them into single options.
 
 ```shell
 # Main program: check for arguments and run markdown script
 mdsh-main() {
-    (($#)) || mdsh-error "Usage: %s [ --compile | --eval ] markdownfile [args...]" "${0#*/}"
+    (($#)) || mdsh-error "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]" "${0#*/}"
     case "$1" in
     --) mdsh-interpret "${@:2}" ;;
-    -)  mdsh-interpret "$@" ;;
-    -*) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0#*/}" "$1"
+    --*|-?) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0#*/}" "$1"
         "mdsh.$1" "${@:2}"
         ;;
+    -??*) mdsh-main "${1::2}" "-${1:2}" "${@:2}" ;;  # split '-abc' into '-a -bc' and recurse
     *)  mdsh-interpret "$@" ;;
     esac
 }
@@ -232,6 +232,21 @@ mdsh.--eval() {
 mdsh.-E() { mdsh.--eval "$@"; }
 ```
 
+### --out (-o) *file*
+
+Send output to the named file, overwriting it in place if and only if the compilation succeeds without error.
+
+```shell
+mdsh.--out() {
+    if REPLY=("$(mdsh-main "${@:2}")"); then
+        echo "$REPLY" >"$1";
+    else exit $?;
+    fi
+}
+
+mdsh.-o() { mdsh.--out "$@"; }
+```
+
 ### Usage Errors
 
 ```shell
@@ -243,7 +258,7 @@ mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 
 ```shell
 mdsh.--help() {
-    printf "Usage: %s [ --compile | --eval ] markdownfile [args...]\n" "${0#*/}"
+    printf "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n" "${0#*/}"
     echo -e '
 Run and/or compile code blocks from markdownfile(s) to bash.
 Use a filename of `-` to run or compile from stdin.

@@ -51,7 +51,7 @@ Errors:
 
 
     $ mdsh
-    Usage: mdsh [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
     $ mdsh --compile
     Usage: mdsh --compile FILENAME...
@@ -71,7 +71,7 @@ Errors:
 Help:
 
     $ mdsh --help
-    Usage: mdsh [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
     
     Run and/or compile code blocks from markdownfile(s) to bash.
     Use a filename of `-` to run or compile from stdin.
@@ -289,3 +289,47 @@ Unfortunately, the only way you can programmatically *make* `$0 == $BASH_SOURCE`
     > ```
     > EOF
     $MDSH_ZERO='-', $0='', $BASH_SOURCE=''
+
+### Compiling to an Output File
+
+Passing `--out *file*` as the first option overwrites that file with the compilation (or run) result, only if it completes without an error:
+
+```shell
+    $ ls x || echo [$?]
+    ls: cannot access 'x': No such file or directory
+    [2]
+
+    $ mdsh -o x || echo [$?]
+    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
+    [64]
+
+    $ ls x || echo [$?]
+    ls: cannot access 'x': No such file or directory
+    [2]
+
+    $ mdsh -o x --compile - <<'EOF'
+    > ```shell
+    > echo hello world
+    > ```
+    > EOF
+    $ bash ./x
+    hello world
+
+    $ { mdsh --out x - || echo [$?]; }  <<'EOF'
+    > ```shell
+    > echo exiting
+    > exit 49
+    > ```
+    > EOF
+    [49]
+    $ bash ./x
+    hello world
+
+    $ { mdsh --out x - || echo [$?]; }  <<'EOF'
+    > ```shell
+    > echo echo exiting
+    > ```
+    > EOF
+    $ bash ./x
+    exiting
+```

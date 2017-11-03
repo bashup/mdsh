@@ -15,7 +15,7 @@ It should be possible to extend mdsh by sourcing it:
 And the result should give error/help messages under its new name:
 
     $ ./foosh
-    Usage: foosh [ --compile | --eval ] markdownfile [args...]
+    Usage: foosh [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
 
 And the extended program's mdsh:file-header and mdsh:file-footer will wrap anything done with it:
