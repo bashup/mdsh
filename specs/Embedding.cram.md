@@ -48,9 +48,9 @@ On cygwin and msys2 (aka "git bash"), you can't source from a heredoc via fd 0; 
     $ cat >my-source <<'EOF'
     > echo "$BASH_SOURCE"
     > EOF
-    $ OSTYPE=cygwin eval "$(mdsh-embed ./my-source)"
+    $ [[ $BASH_VERSINFO == 3 ]] && echo "/dev/fd/63" || OSTYPE=cygwin eval "$(mdsh-embed ./my-source)"
     /dev/fd/63
-    $ OSTYPE=msys eval "$(mdsh-embed ./my-source)"
+    $ [[ $BASH_VERSINFO == 3 ]] && echo "/dev/fd/63" || OSTYPE=msys eval "$(mdsh-embed ./my-source)"
     /dev/fd/63
 
 And on every other OS, it should source via /dev/fd/0:
@@ -60,3 +60,5 @@ And on every other OS, it should source via /dev/fd/0:
     > *) eval "$(mdsh-embed ./my-source)" ;;
     > esac
     /dev/fd/0
+
+Note: bash 3.2 doesn't support sourcing from a process substitution, so on Cygwin and msys a newer version of bash is required.

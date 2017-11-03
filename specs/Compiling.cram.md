@@ -295,17 +295,17 @@ Unfortunately, the only way you can programmatically *make* `$0 == $BASH_SOURCE`
 Passing `--out *file*` as the first option overwrites that file with the compilation (or run) result, only if it completes without an error:
 
 ```shell
-    $ ls x || echo [$?]
-    ls: cannot access 'x': No such file or directory
-    [2]
+    $ ls x || echo fail
+    ls: *: No such file or directory (glob)
+    fail
 
     $ mdsh -o x || echo [$?]
     Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
 
-    $ ls x || echo [$?]
-    ls: cannot access 'x': No such file or directory
-    [2]
+    $ ls x || echo fail
+    ls: *: No such file or directory (glob)
+    fail
 
     $ mdsh -o x --compile - <<'EOF'
     > ```shell
