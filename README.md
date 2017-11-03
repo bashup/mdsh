@@ -168,10 +168,10 @@ Notice too, by the way, that `compile` functions get access to the actual block 
 
 Documents created with mdsh can be tested using the [cram](https://bitheap.org/cram/) functional testing tool.  Just set cram's indent level to 4 and use 4-space indented blocks for your cram-tested examples, optionally wrapped in `~~~` fenced code blocks like this:
 
-~~~shell
+~~~~shell
     $ echo "hello world!"
     hello world!
-~~~
+~~~~
 
 Cram looks for `$` or `>` and a space, indented to a certain level, then runs the command(s) and verifies the output.  So cram needs to know what indentation you're using.
 
@@ -185,10 +185,11 @@ Explaining all the ins and outs of using cram is beyond the scope of this guide,
 
 If your script has a lot of documentation examples that contain fenced code blocks, you may want to exclude these from being processed or copied to bash variables.  There are two main ways you can do this.
 
-First, you can change the way you indicate certain code blocks.  All of these are ignored by `mdsh` and do not generate any code:
+First, you can change the way you indicate certain code blocks.  All of these are currently ignored by `mdsh` and do not generate any code:
 
 * Code blocks indented with four spaces, instead of fenced
 * Code blocks fenced with `~~~X` instead of `` ```X ``
+* Code blocks fenced with more than three backquotes, or which are indented
 * Code blocks with no language tag
 
 Alternately, you can define empty `mdsh-compile-X` functions in an mdsh block, for each language you want to exclude from the compilation, or define an `mdsh-misc` function that does nothing.  (Which will disable data blocks entirely; see the section on [Metaprogramming and Code Generation](#metaprogramming-and-code-generation) below for more info on `mdsh-misc`.)
