@@ -67,26 +67,26 @@ mdsh-read() {
 
 ### Parser
 
-`mdsh-parse` is an "event-driven" mini-parser for markdown.  It takes a function name and a markdown string as arguments, and invokes the function with arguments representing "events".  Currently the only event is `backquote-fenced`, which has two extra arguments: the language of the code block, and its contents.
+`mdsh-parse` is an "event-driven" mini-parser for markdown.  It takes a function name and a markdown string as arguments, and invokes the function with arguments representing "events".  Currently the only event is `fenced`, which has two extra arguments: the language of the code block, and its contents.
+
+The `$fence` and `$indent` variables can be inspected to tell what the block's original fence string (e.g. `~~~`) was, and how deeply it was indented.  The parser implements the full [Commonmark specification for fenced code blocks](http://spec.commonmark.org/0.28/#fenced-code-blocks), including indentation-removal, fence lengths, allowed characters, etc.:
 
 ```shell
 mdsh-parse() {
-    local cmd=$1 lang block md=$2 ln
+    local cmd=$1 lang block md=$2 ln indent fence close_fence indent_remove
+    local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
     while mdsh-read md ln; do
-        case $ln in
-        '```'*)
-            lang=${ln#'```'}; block=
-            while mdsh-read md ln && [[ $ln != '```' ]]; do block+=$ln$'\n'; done
-            "$cmd" backquote-fenced "$lang" "$block"
-            ;;
-        '~~~'*)
-            while mdsh-read md ln && [[ $ln != '~~~'* ]]; do :; done ;;
-        esac
+        if [[ $ln =~ $open_fence ]]; then
+            indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
+            close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
+            while mdsh-read md ln && ! [[ $ln =~ $close_fence ]]; do
+                ! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
+            done
+            lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
+        fi
     done
 }
 ```
-
-The parser skips tilde-fenced blocks, so that any triple-backquote blocks inside such a block are ignored.
 
 ## Compiler
 
@@ -103,11 +103,11 @@ The actual "compilation" consists simply of parsing the file contents using the 
 
 ### Code Block Handling
 
-`__COMPILE__` emits bash code for backquote-fenced code blocks, by looking up hook functions, and either copying out their source code (using `mdsh-rewrite`), or invoking them directly:
+`__COMPILE__` emits bash code for unindented, triple-backquote-fenced code blocks, by interpreting them as command blocks or looking up hook functions, and either copying out their source code (using `mdsh-rewrite`), or invoking them directly:
 
 ```shell
 __COMPILE__() {
-    [[ $1 == backquote-fenced ]] || return 0  # only fenced code
+    [[ $1 == fenced && $fence == '```' && ! $indent ]] || return 0  # only unindented ``` code
     local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
     local tag_words=($2);  # check for command blocks first
     if [[ ${tag_words[1]-} == '!'* ]]; then
@@ -169,7 +169,7 @@ And for syntax highlighting convenience, `shell mdsh` blocks are treated as `mds
 
 ```shell
 mdsh-compile-shell_mdsh() {
-    __COMPILE__ backquote-fenced mdsh "$1"
+    indent= fence='```' __COMPILE__ fenced mdsh "$1"
 }
 ```
 

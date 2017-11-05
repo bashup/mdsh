@@ -60,7 +60,7 @@ If you have [basher](https://github.com/basherpm/basher), you can install `mdsh`
 
 ## Usage
 
-Running `mdsh` *markdownfile args...* will read and translate backquote-fenced code blocks from *markdownfile* into bash code, based on the language listed on the block and any translation rules you've defined.  The resulting translated script is then run, passing in *args* as positional arguments to the script.
+Running `mdsh` *markdownfile args...* will read and translate unindented, triple-backquote fenced code blocks from *markdownfile* into bash code, based on the language listed on the block and any translation rules you've defined.  The resulting translated script is then run, passing in *args* as positional arguments to the script.
 
 Blocks tagged as `shell` are interpreted as bash code, and directly copied to the translated script.  So arguments passed to `mdsh` after the path to the markdown file are available as `$1`, `$2`, etc. within the top-level code of `shell` blocks, just like in a regular bash script.
 
@@ -178,7 +178,7 @@ A command block is a code block whose language tag's *second word* begins with a
 
 (In either case, the word *before* the `|` or `!` is ignored and discarded: it's assumed to be just a syntax highlighting hint.)
 
-So this code as input to mdsh:
+Command blocks override normal language function lookups, so no  `mdsh-after-X` , `mdsh-lang-X`, or `mdsh-compile-X` functions are looked up or executed for command blocks.  Thus, this code as input to mdsh:
 
 ~~~markdown
 ​```json !printf "echo %q\n" "def example: $1;"
@@ -199,7 +199,7 @@ print("hello world!")
 ​```
 ```
 
-Notice that both forms of command blocks can contain arbitrary bash code, including pipes, substitutions, etc.  Command blocks also override normal language function lookups, so no  `mdsh-after-X` , `mdsh-lang-X`, or `mdsh-compile-X` functions are looked up or executed for command blocks.
+Notice that both forms of command block tags can contain virtually arbitrary bash code, including pipes, substitutions, etc., but **must not** contain backquote characters, as the [Commonmark specification](http://spec.commonmark.org/0.28/#fenced-code-blocks) calls for treating such lines as regular text with inline code, rather than the start of a fenced code block.  mdsh and other Commonmark-conforming tools will therefore not even recognize the line as beginning a code block, and parsing of the rest of the input file will be thrown off, with code being interpreted as text and vice versa.
 
 ## Tips and Techniques
 
@@ -232,9 +232,9 @@ First, you can change the way you indicate certain code blocks.  All of these ar
 
 * Code blocks fenced with more than three backquotes, or which are indented
 
-* Code blocks with no language tag
+* Code blocks with no language given
 
-* Code blocks whose language tag is an empty or no-op immediate command.  That is, a single word followed by a space and a `!` character, optionally followed by a shell comment or no-op shell command.  For example:
+* Immediate command blocks whose command is empty or a no-op.  (That is, blocks whose language is a single word followed by a space and a `!` character, optionally followed by a shell comment or no-op shell command.)  For example both of these code blocks would be omitted from a compiled script:
 
   ~~~markdown
   ​```python ! # mdsh won't do anything with this block
