@@ -227,9 +227,23 @@ If your script has a lot of documentation examples that contain fenced code bloc
 First, you can change the way you indicate certain code blocks.  All of these are currently ignored by `mdsh` and do not generate any code:
 
 * Code blocks indented with four spaces, instead of fenced
+
 * Code blocks fenced with `~~~X` instead of `` ```X ``
+
 * Code blocks fenced with more than three backquotes, or which are indented
+
 * Code blocks with no language tag
+
+* Code blocks whose language tag is an empty or no-op immediate command.  That is, a single word followed by a space and a `!` character, optionally followed by a shell comment or no-op shell command.  For example:
+
+  ~~~markdown
+  ​```python ! # mdsh won't do anything with this block
+  raise RuntimeError("This won't actually run!")
+  ​```
+  ​```shell !
+  echo "No comment is actually needed.  This block is ignored, too."
+  ​```
+  ~~~
 
 Alternately, you can define empty `mdsh-compile-X` functions in an mdsh block, for each language you want to exclude from the compilation, or define an `mdsh-misc` function that does nothing.  (Which will disable data blocks entirely; see the section on [Metaprogramming and Code Generation](#metaprogramming-and-code-generation) below for more info on `mdsh-misc`.)
 
