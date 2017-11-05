@@ -1,6 +1,6 @@
 ## Multi-Lingual Literate Programming with `mdsh`
 
-`mdsh` is a bash script compiler and interpreter for markdown files.  It can be used either in a `#!` line to make markdown files executable, or it can be used as a standalone tool to generate dependency-free, distributable bash scripts from markdown files.
+`mdsh` is a bash script compiler and interpreter for markdown files.  It can be used in a `#!` line to make markdown files executable, or it can be used as a standalone tool to generate dependency-free, distributable bash scripts from markdown files.
 
 By default, `mdsh` only considers `shell` code blocks to be bash code, but you can also use `mdsh` blocks to define handlers for other languages.  For example, this script will run `python`-tagged code blocks by piping them to the `python` command:
 
@@ -38,6 +38,9 @@ print("hello world!")
   * [Data Blocks](#data-blocks)
   * [Processing Non-`shell` Languages](#processing-non-shell-languages)
   * [Advanced Block Compilation Techniques](#advanced-block-compilation-techniques)
+  * [Command Blocks and Arguments](#command-blocks-and-arguments)
+- [Tips and Techniques](#tips-and-techniques)
+  * [Literate Testing](#literate-testing)
   * [Excluding Blocks From The Generated Script](#excluding-blocks-from-the-generated-script)
   * [Making Executable (and Editable) Markdown Files](#making-executable-and-editable-markdown-files)
   * [Making Sourceable Scripts (and handling $0)](#making-sourceable-scripts-and-handling-0)
@@ -198,9 +201,11 @@ print("hello world!")
 
 Notice that both forms of command blocks can contain arbitrary bash code, including pipes, substitutions, etc.  Command blocks also override normal language function lookups, so no  `mdsh-after-X` , `mdsh-lang-X`, or `mdsh-compile-X` functions are looked up or executed for command blocks.
 
+## Tips and Techniques
+
 ### Literate Testing
 
-Documents created with mdsh can be tested using the [cram](https://bitheap.org/cram/) functional testing tool.  Just set cram's indent level to 4 and use 4-space indented blocks for your cram-tested examples, optionally wrapped in `~~~` fenced code blocks like this:
+Documents created with mdsh can include example shell sessions that are tested using the [cram](https://bitheap.org/cram/) functional testing tool.  Just set cram's indent level to 4 and use 4-space indented blocks for your cram-tested examples, optionally wrapped in `~~~` fenced code blocks like this:
 
 ~~~~shell
     $ echo "hello world!"
@@ -323,7 +328,7 @@ Of course, the possible applications of `mdsh-misc` are considerably more varied
 
 ### "Static Linking" for Distribution
 
-You can use the `mdsh-embed` function to embed the source of other modules into your script.  Calling `mdsh-embed` *modulename* inside an `mdsh` block will search `PATH` for *modulename* (unless *modulename* contains a `/`), and then output its source code, wrapped in a heredoc and `source` command.  (This ensures that the embedded module will know it was sourced, and not via the command line, even if the embedding script *was* run from the command line.)
+You can use the `mdsh-embed` function to embed the source of other bash modules into your script.  Calling `mdsh-embed` *modulename* inside an `mdsh` block will search `PATH` for *modulename* (unless *modulename* contains a `/`), and then output its source code, wrapped in a heredoc and `source` command.  (This ensures that the embedded module will know it was sourced, and not run via the command line, even if the embedding script *was* run from the command line.)
 
 The net result is that by using `mdsh-embed` in your `mdsh` block(s) to load your modules (instead of `source` inside your `shell` blocks), you gain the ability to `--compile` your script to a "statically-linked executable".  That is, you can create a single file that contains all the modules it needs, so your users don't have to install all your dependencies themselves, and don't need a specific package manager to install your script.
 
