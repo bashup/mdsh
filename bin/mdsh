@@ -26,17 +26,17 @@ mdsh-read() {
     printf -v "$1"         %s "${!1#"$BASH_REMATCH"}"
 }
 mdsh-parse() {
-    local cmd=$1 lang block md=$2 ln
+    local cmd=$1 lang block md=$2 ln indent fence close_fence indent_remove
+    local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
     while mdsh-read md ln; do
-        case $ln in
-        '```'*)
-            lang=${ln#'```'}; block=
-            while mdsh-read md ln && [[ $ln != '```' ]]; do block+=$ln$'\n'; done
-            "$cmd" backquote-fenced "$lang" "$block"
-            ;;
-        '~~~'*)
-            while mdsh-read md ln && [[ $ln != '~~~'* ]]; do :; done ;;
-        esac
+        if [[ $ln =~ $open_fence ]]; then
+            indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
+            close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
+            while mdsh-read md ln && ! [[ $ln =~ $close_fence ]]; do
+                ! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
+            done
+            lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
+        fi
     done
 }
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
@@ -44,7 +44,7 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     REPLY=$(cat; echo -n _); mdsh-parse __COMPILE__ "${REPLY%_}"
 )
 __COMPILE__() {
-    [[ $1 == backquote-fenced ]] || return 0  # only fenced code
+    [[ $1 == fenced && $fence == '```' && ! $indent ]] || return 0  # only unindented ``` code
     local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
     local tag_words=($2);  # check for command blocks first
     if [[ ${tag_words[1]-} == '!'* ]]; then
@@ -77,7 +77,7 @@ mdsh-data() {
     printf "mdsh_raw_${1//[^_[:alnum:]]/_}+=(%q)\n" "$2"
 }
 mdsh-compile-shell_mdsh() {
-    __COMPILE__ backquote-fenced mdsh "$1"
+    indent= fence='```' __COMPILE__ fenced mdsh "$1"
 }
 # Main program: check for arguments and run markdown script
 mdsh-main() {
