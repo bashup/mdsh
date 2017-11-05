@@ -17,6 +17,9 @@ And then we run the result with mdsh:
     
     // hey
     
+    def example: {"foo": "bar"}
+    ;
+    hello world!
     Most tools will highlight this block as shell script
 
 

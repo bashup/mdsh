@@ -109,8 +109,12 @@ The actual "compilation" consists simply of parsing the file contents using the 
 __COMPILE__() {
     [[ $1 == backquote-fenced ]] || return 0  # only fenced code
     local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
-
-    if fn-exists mdsh-lang-$lang; then
+    local tag_words=($2);  # check for command blocks first
+    if [[ ${tag_words[1]-} == '!'* ]]; then
+        set -- "$3" "$2"; eval "${2#*!}"; return
+    elif [[ ${tag_words[1]-} == '|'* ]]; then
+        echo "${2#*|} <<'\`\`\`'"; printf '%s```\n' "$3"; return
+    elif fn-exists mdsh-lang-$lang; then
         mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; printf '%s```\n' "$3"
     elif fn-exists mdsh-compile-$lang; then
         mdsh-compile-$lang "$3"

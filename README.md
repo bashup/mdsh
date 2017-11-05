@@ -164,6 +164,40 @@ Notice the use of `printf` with `%q` -- this results in the data being properly 
 
 Notice too, by the way, that `compile` functions get access to the actual block text, which means that you can do any sort of code generation you like.  For example, I could have taken the output of `yaml2json`, and run `jq` over it, then looped over the output and written bash code to set variables based on the result, or generated code for subcommands based on the specification, or maybe even generated an argument parser from it.  There are all sorts of interesting possibilities for these kinds of code generation techniques!
 
+### Command Blocks and Arguments
+
+Sometimes you have only one block that needs to be processed in a particular way, or each block of a particular language needs unique arguments to compile or execute.  For these scenarios, you can define "command blocks".
+
+A command block is a code block whose language tag's *second word* begins with a `|` or `!`:
+
+* If it's a `|`, the remainder of the language tag is executed at **run** time with the block's contents on standard input (just like an `mdsh-lang-X` function body)
+* If it's a `!`, the remainder of the language tag is executed at **compile** time with the block's contents in `$1`, and must output compiled code to standard output (just like an `mdsh-compile-X` function).
+
+(In either case, the word *before* the `|` or `!` is ignored and discarded: it's assumed to be just a syntax highlighting hint.)
+
+So this code as input to mdsh:
+
+~~~markdown
+​```json !printf "echo %q\n" "def example: $1;"
+{"foo": "bar"}
+​```
+
+​```python |python
+print("hello world!")
+​```
+~~~
+
+would compile to the following output:
+
+```bash
+echo $'def example: {"foo": "bar"}\n;'
+python <<<'```'
+print("hello world!")
+​```
+```
+
+Notice that both forms of command blocks can contain arbitrary bash code, including pipes, substitutions, etc.  Command blocks also override normal language function lookups, so no  `mdsh-after-X` , `mdsh-lang-X`, or `mdsh-compile-X` functions are looked up or executed for command blocks.
+
 ### Literate Testing
 
 Documents created with mdsh can be tested using the [cram](https://bitheap.org/cram/) functional testing tool.  Just set cram's indent level to 4 and use 4-space indented blocks for your cram-tested examples, optionally wrapped in `~~~` fenced code blocks like this:
