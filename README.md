@@ -218,7 +218,7 @@ mdsh ignores 4-space indented and `~~~` fenced blocks, so it won't be confused b
 
 Explaining all the ins and outs of using cram is beyond the scope of this guide, but in the simplest case, using `cram --indent 4 mydocument.md` will run any 4-space indented examples in `mydocument.md`.
 
-(Note that `cram` does not actually understand markdown, so it will try to run anything that begins with `"$ "` or `"> "` at the specified indent.  Non-example code that starts that way can typically be outdented slightly or indented further so that cram will ignore it.)
+(Note that `cram` does not actually understand markdown, so it will try to run anything that begins with `"$ "` or `"> "` at the specified indent.  Non-example code that starts that way can typically be outdented slightly or indented further so that cram will ignore it.  Until [this PR](https://github.com/brodie/cram/pull/29) is merged, you'll want to use [this fork of cram](https://github.com/pjeby/cram/tree/indent-fix), which is patched to ignore indented lines that aren't directly part of an example.  If you use [.devkit](https://github.com/bashup/.devkit)'s cram module, your tests will automatically run with the correct version.)
 
 ### Excluding Blocks From The Generated Script
 
