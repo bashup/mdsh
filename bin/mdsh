@@ -18,21 +18,14 @@ set -euo pipefail  # Strict mode
 # FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-# read line from variable named by $1, reply in variable named by $2 (or REPLY)
-mdsh-read() {
-    [[ ${!1} && ${!1} =~ ^([^$'\n']*)($'\n'|$) ]] || return 1
-    printf -v "${2-REPLY}" %s "${BASH_REMATCH[1]}"
-    printf -v "$1"         %s "${!1#"$BASH_REMATCH"}"
-}
 mdsh-parse() {
-    local cmd=$1 lang block md=$2 ln indent fence close_fence indent_remove
+    local cmd=$1 lang block ln indent fence close_fence indent_remove
     local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
-    while mdsh-read md ln; do
+    while IFS= read -r ln; do
         if [[ $ln =~ $open_fence ]]; then
             indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
             close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
-            while mdsh-read md ln && ! [[ $ln =~ $close_fence ]]; do
+            while IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
                 ! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
             done
             lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
@@ -41,7 +34,7 @@ mdsh-parse() {
 }
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
-    REPLY=$(cat; echo -n _); mdsh-parse __COMPILE__ "${REPLY%_}"
+    mdsh-parse __COMPILE__
 )
 __COMPILE__() {
     [[ $1 == fenced && $fence == '```' && ! $indent ]] || return 0  # only unindented ``` code

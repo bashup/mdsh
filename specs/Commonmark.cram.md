@@ -21,7 +21,7 @@ An opening code fence:
 Therefore, all of these are invalid fence openers and should not be recognized as code blocks:
 
 ```shell
-    $ mdsh-parse dummy '
+    $ mdsh-parse dummy <<<'
     > ~~
     > ~~~~ `
     > ``` `
@@ -35,7 +35,7 @@ Therefore, all of these are invalid fence openers and should not be recognized a
 Leading and trailing whitespace are trimmed from the info string:
 
 ```shell
-    $ mdsh-parse dummy '
+    $ mdsh-parse dummy <<<'
     > ```  some info  
     > text
     > ```'
@@ -53,7 +53,7 @@ A closing code fence:
 * has nothing but spaces after it
 
 ```````shell
-    $ mdsh-parse dummy '
+    $ mdsh-parse dummy <<<'
     > ~~~test 1
     > ~~ `
     > ``` `
@@ -84,7 +84,7 @@ A closing code fence:
 Indentation up to the same amount as the fence is removed from the block contents, and the closing indent doesn't have to match the opening indent:
 
 ```shell
-    $ mdsh-parse dummy '
+    $ mdsh-parse dummy <<<'
     >  ```
     >   block 1, indent 2
     >  block 1, indent 1
@@ -123,7 +123,7 @@ Indentation up to the same amount as the fence is removed from the block content
 ### Run-Off
 A block is allowed to run off the end of the file:
 ```shell
-    $ mdsh-parse dummy '
+    $ mdsh-parse dummy <<<'
     > ```test
     > text'
     indent='' fence='```' info='test'

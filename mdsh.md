@@ -27,9 +27,7 @@ echo; sed -e '1,2d; s/^\(.\)/# \1/; s/^$/#/;' "$REPLY/LICENSE"; echo
 
 <!-- toc -->
 
-- [Parsing](#parsing)
-  * [Line Reader](#line-reader)
-  * [Parser](#parser)
+- [Parser](#parser)
 - [Compiler](#compiler)
   * [Code Block Handling](#code-block-handling)
     + [fn-exists](#fn-exists)
@@ -39,6 +37,7 @@ echo; sed -e '1,2d; s/^\(.\)/# \1/; s/^$/#/;' "$REPLY/LICENSE"; echo
   * [Interpreting Files](#interpreting-files)
   * [--compile (-c)](#--compile--c)
   * [--eval (-E)](#--eval--e)
+  * [--out (-o) *file*](#--out--o-file)
   * [Usage Errors](#usage-errors)
   * [Help (-h and --help)](#help--h-and---help)
 - [Utilities and Startup](#utilities-and-startup)
@@ -49,37 +48,21 @@ echo; sed -e '1,2d; s/^\(.\)/# \1/; s/^$/#/;' "$REPLY/LICENSE"; echo
 
 <!-- tocstop -->
 
-## Parsing
+## Parser
 
-### Line Reader
-
-The `mdsh-read` function is a bit like bash's `read` builtin, except it only reads lines and it reads them from a variable instead of a file.  It returns false if the variable is empty, otherwise it removes a line from the variable and returns it in the variable given as the second argument (minus the linefeed character).  If the second argument is omitted, `REPLY` is used (just like `read`.)
-
-```shell
-
-# read line from variable named by $1, reply in variable named by $2 (or REPLY)
-mdsh-read() {
-    [[ ${!1} && ${!1} =~ ^([^$'\n']*)($'\n'|$) ]] || return 1
-    printf -v "${2-REPLY}" %s "${BASH_REMATCH[1]}"
-    printf -v "$1"         %s "${!1#"$BASH_REMATCH"}"
-}
-```
-
-### Parser
-
-`mdsh-parse` is an "event-driven" mini-parser for markdown.  It takes a function name and a markdown string as arguments, and invokes the function with arguments representing "events".  Currently the only event is `fenced`, which has two extra arguments: the language of the code block, and its contents.
+`mdsh-parse` is an "event-driven" mini-parser for markdown.  It takes a function name as an argument and a markdown string on stdin, and invokes the function with arguments representing "events".  Currently the only event is `fenced`, which has two extra arguments: the language of the code block, and its contents.
 
 The `$fence` and `$indent` variables can be inspected to tell what the block's original fence string (e.g. `~~~`) was, and how deeply it was indented.  The parser implements the full [Commonmark specification for fenced code blocks](http://spec.commonmark.org/0.28/#fenced-code-blocks), including indentation-removal, fence lengths, allowed characters, etc.:
 
 ```shell
 mdsh-parse() {
-    local cmd=$1 lang block md=$2 ln indent fence close_fence indent_remove
+    local cmd=$1 lang block ln indent fence close_fence indent_remove
     local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
-    while mdsh-read md ln; do
+    while IFS= read -r ln; do
         if [[ $ln =~ $open_fence ]]; then
             indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
             close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
-            while mdsh-read md ln && ! [[ $ln =~ $close_fence ]]; do
+            while IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
                 ! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
             done
             lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
@@ -95,7 +78,7 @@ mdsh-parse() {
 ```shell
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
     (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
-    REPLY=$(cat; echo -n _); mdsh-parse __COMPILE__ "${REPLY%_}"
+    mdsh-parse __COMPILE__
 )
 ```
 
