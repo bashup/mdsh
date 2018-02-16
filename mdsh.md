@@ -279,6 +279,18 @@ mdsh-embed() {
 }
 ```
 
+### mdsh-make
+
+Compile file `$1` to file `$2` if the destination doesn't exist or doesn't have the same timestamp.  Compilation happens in a subshell, and any additional arguments are treated as a command to be run inside the subshell before the compilation.  (They're only run if compilation is about to occur.)  If compilation happens and is successful, `$2` is touched to the same timestamp as `$1`.
+
+```shell
+mdsh-make() {
+    [[ -f "$2" && "$(stat -c %y "$1")" == "$(stat -c %y "$2")" ]] || (
+        "${@:3}" && mdsh-main --out "$2" --compile "$1" && touch -r "$1" "$2"
+    )
+}
+```
+
 ### run-markdown
 
 ```shell

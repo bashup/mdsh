@@ -333,3 +333,26 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     $ bash ./x
     exiting
 ```
+
+### Building an Output File with mdsh-make
+
+```shell
+    $ source mdsh; set +e
+    $ mkdir t; cd t
+    $ mdsh-make ../t1.md t1 echo building
+    building
+    $ cat t1
+    echo yep
+    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    0
+    $ mdsh-make ../t1.md t1 echo building
+    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    0
+    $ touch ../t1.md
+    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    1
+    $ mdsh-make ../t1.md t1 echo building
+    building
+    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    0
+```

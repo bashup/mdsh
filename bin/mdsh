@@ -141,6 +141,11 @@ mdsh-embed() {
     done
     printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
 }
+mdsh-make() {
+    [[ -f "$2" && "$(stat -c %y "$1")" == "$(stat -c %y "$2")" ]] || (
+        "${@:3}" && mdsh-main --out "$2" --compile "$1" && touch -r "$1" "$2"
+    )
+}
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() { source <(mdsh-compile <"$1") "${@:2}"; }
