@@ -32,9 +32,12 @@ mdsh-parse() {
         fi
     done
 }
-mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
+mdsh-source() {
     (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
     mdsh-parse __COMPILE__
+}
+mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
+    mdsh-source "$@"
 )
 __COMPILE__() {
     [[ $1 == fenced && $fence == '```' && ! $indent ]] || return 0  # only unindented ``` code

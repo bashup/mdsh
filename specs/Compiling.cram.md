@@ -125,6 +125,26 @@ Languages with a runtime function get embedded, and mdsh blocks are executed sil
     $ type -t mdsh-lang-python || echo [$?]
     [1]
 
+unless you use mdsh-source, instead:
+
+    $ mdsh-source <<'EOF'
+    > ```mdsh
+    > mdsh-lang-python() { python; }
+    > ```
+    > ```python
+    > print("hiya")
+    > ```
+    > EOF
+    {
+        python
+    } <<'```'
+    print("hiya")
+    (```) (re)
+
+    $ type -t mdsh-lang-python || echo [$?]
+    function
+
+
 You can define mdsh-compile-X functions to generate code directly:
 
     $ mdsh --compile - <<'EOF'

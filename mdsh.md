@@ -73,16 +73,30 @@ mdsh-parse() {
 
 ## Compiler
 
-`mdsh-compile` compiles text from standard input, or from the file specified by `$1` (if given).  It runs in a subshell so that variable and function definitions from `mdsh` blocks can't affect the main process state.
+### API
+
+#### mdsh-source
+
+`mdsh-source` compiles text from standard input, or from the file specified by `$1` (if given).  It runs in the current shell, so the input is treated as if it were contained in the same file as is currently being compiled (if any.)
+
+```shell
+mdsh-source() {
+    (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
+    mdsh-parse __COMPILE__
+}
+```
+
+(The actual "compilation" consists simply of parsing the file contents using the `__COMPILE__` function as the event handler.)
+
+#### mdsh-compile
+
+`mdsh-compile` is the same as `mdsh-source`, except it's run in a subshell so that variable and function definitions from `mdsh` blocks in the supplied code can't affect the main process state.
 
 ```shell
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
-    (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
-    mdsh-parse __COMPILE__
+    mdsh-source "$@"
 )
 ```
-
-The actual "compilation" consists simply of parsing the file contents using the `__COMPILE__` function as the event handler
 
 ### Code Block Handling
 
