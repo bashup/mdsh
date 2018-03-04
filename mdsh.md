@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 : '
-<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell\( main\)\?$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; eval "$(@main mdsh-main; mdsh-main -E /dev/null)"; # -->
+<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; eval "$(@main mdsh-main; mdsh-main -E /dev/null)"; # -->
 # mdsh: a self-hosted Markdown-to-Shell Compiler
 
 ``mdsh`` is a compiler and interpreter for literate programs written in markdown and bash, that is itself written as a literate program in markdown and bash.  In the compiled distribution, it contains a LICENSE header (see [LICENSE](LICENSE) file for the terms that apply to this source file as well as the compiled version):
@@ -24,6 +24,9 @@ set -euo pipefail  # Strict mode
 
 - [Parser](#parser)
 - [Compiler](#compiler)
+  * [API](#api)
+    + [mdsh-source](#mdsh-source)
+    + [mdsh-compile](#mdsh-compile)
   * [Code Block Handling](#code-block-handling)
     + [fn-exists](#fn-exists)
     + [mdsh-rewrite](#mdsh-rewrite)
@@ -35,11 +38,16 @@ set -euo pipefail  # Strict mode
   * [--out (-o) *file*](#--out--o-file)
   * [Usage Errors](#usage-errors)
   * [Help (-h and --help)](#help--h-and---help)
-- [Utilities and Startup](#utilities-and-startup)
+- [Modules](#modules)
+  * [@import](#import)
+  * [@module](#module)
+  * [@main](#main)
+  * [@comment](#comment)
+- [Utility Functions](#utility-functions)
   * [mdsh-embed](#mdsh-embed)
+  * [mdsh-make](#mdsh-make)
   * [run-markdown](#run-markdown)
-  * [Deprecated Functions](#deprecated-functions)
-  * [Run Main](#run-main)
+- [Startup](#startup)
 
 <!-- tocstop -->
 
@@ -337,7 +345,7 @@ If building a top-level module, output the specified file(s) as shell-commented 
 }
 ```
 
-## Utilities and Startup
+## Utility Functions
 
 ### mdsh-embed
 
@@ -377,24 +385,7 @@ mdsh-make() {
 run-markdown() { source <(mdsh-source "${1--}") "${@:2}"; }
 ```
 
-### Deprecated Functions
-
-```shell
-# --- BEGIN DEPRECATED CODE ---
-markdown-to-shell() {
-    local arg cmd="$1" any='[^'"'"']\{1,\}'; local lang="${2:-$any}"
-
-    # Build up an "or" of languages, if more than one given
-    if (($#>2)); then printf -v lang '\|%q' "${@:3}"; lang="$2$lang"; fi
-    extract-markdown '\('"$lang"'\)' "$cmd"' <<'"'"'```'"' '\\2'" '```'
-}
-extract-markdown() { extract-between '^```'"$1"'$' '^```$' "${@:2}"; }
-extract-between() { sed -ne '/'"$1"'/,/'"$2"'/ { s/\('"$1"'\)/'"${3-}"'/; s/'"$2"'/'"${4-}"'/; p;}'; }
-# --- END DEPRECATED CODE ---
-
-```
-
-### Run Main
+## Startup
 
 ```shell mdsh
 @main mdsh-main

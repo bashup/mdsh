@@ -193,17 +193,5 @@ mdsh-make() {
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() { source <(mdsh-source "${1--}") "${@:2}"; }
-# --- BEGIN DEPRECATED CODE ---
-markdown-to-shell() {
-    local arg cmd="$1" any='[^'"'"']\{1,\}'; local lang="${2:-$any}"
-
-    # Build up an "or" of languages, if more than one given
-    if (($#>2)); then printf -v lang '\|%q' "${@:3}"; lang="$2$lang"; fi
-    extract-markdown '\('"$lang"'\)' "$cmd"' <<'"'"'```'"' '\\2'" '```'
-}
-extract-markdown() { extract-between '^```'"$1"'$' '^```$' "${@:2}"; }
-extract-between() { sed -ne '/'"$1"'/,/'"$2"'/ { s/\('"$1"'\)/'"${3-}"'/; s/'"$2"'/'"${4-}"'/; p;}'; }
-# --- END DEPRECATED CODE ---
-
 # --- All functions have been defined, main script starts here! ---
 if [[ $0 == "$BASH_SOURCE" ]]; then mdsh-main "$@"; fi
