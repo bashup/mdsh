@@ -117,7 +117,7 @@ mdsh.--eval() {
     (($# == 1)) && [[ $1 != - ]] ||
         mdsh-error "Usage: %s --eval FILENAME" "${0#*/}"
     mdsh.--compile "$1"
-    echo "__status=\$? eval 'return \$__status || exit \$__status' 2>/dev/null"
+    echo $'__status=$? eval \'return $__status || exit $__status\' 2>/dev/null'
 }
 
 mdsh.-E() { mdsh.--eval "$@"; }
@@ -165,7 +165,7 @@ MDSH_MODULE=
 @main() {
     ! [[ $MDSH_MODULE ]] || return 0
     echo '# --- All functions have been defined, main script starts here! ---'
-    echo 'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"' "$@"; exit $?; fi'
+    echo 'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"' "$@"; fi'
 }
 @comment() {
     [[ $MDSH_MODULE ]] || (
@@ -206,4 +206,4 @@ extract-between() { sed -ne '/'"$1"'/,/'"$2"'/ { s/\('"$1"'\)/'"${3-}"'/; s/'"$2
 # --- END DEPRECATED CODE ---
 
 # --- All functions have been defined, main script starts here! ---
-if [[ $0 == "$BASH_SOURCE" ]]; then mdsh-main "$@"; exit $?; fi
+if [[ $0 == "$BASH_SOURCE" ]]; then mdsh-main "$@"; fi
