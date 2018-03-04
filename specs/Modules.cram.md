@@ -4,10 +4,10 @@ The `mdsh-module` function should run its arguments on first use, but not subseq
 
 ~~~shell
     $ source "$TESTDIR/../mdsh.md"; set +e
-    $ mdsh-module foo echo "first!"
+    $ @import foo echo "first!"
     first!
-    $ mdsh-module foo echo "first!"
-    $ mdsh-module bar echo "second"
+    $ @import foo echo "first!"
+    $ @import bar echo "second"
     second
 ~~~
 
@@ -15,14 +15,14 @@ While executing, the command should see a local value of `MDSH_MODULE` equal to 
 
 ~~~shell
     $ load() { echo "$MDSH_MODULE"; }
-    $ mdsh-module baz load
+    $ @import baz load
     baz
 ~~~
 
 This value should *not* be exported to other processes:
 
 ~~~shell
-    $ mdsh-module spam bash -c 'echo ${MDSH_MODULE-safe!}'
+    $ @import spam bash -c 'echo ${MDSH_MODULE-safe!}'
     safe!
 ~~~
 
@@ -50,7 +50,7 @@ echo "# This footer is only in the main program"
 The result is different depending on whether it's done as a module or not:
 
 ~~~shell
-    $ mdsh-module zebra mdsh-source "$TESTDIR/$TESTFILE"
+    $ @import zebra mdsh-source "$TESTDIR/$TESTFILE"
     # This line is always here
     # And so is this
 
