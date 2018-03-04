@@ -151,7 +151,7 @@ mdsh-make() {
 }
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
-run-markdown() { source <(mdsh-compile <"$1") "${@:2}"; }
+run-markdown() { source <(mdsh-source "${1--}") "${@:2}"; }
 # --- BEGIN DEPRECATED CODE ---
 markdown-to-shell() {
     local arg cmd="$1" any='[^'"'"']\{1,\}'; local lang="${2:-$any}"

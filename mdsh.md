@@ -310,7 +310,7 @@ mdsh-make() {
 ```shell
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
-run-markdown() { source <(mdsh-compile <"$1") "${@:2}"; }
+run-markdown() { source <(mdsh-source "${1--}") "${@:2}"; }
 ```
 
 ### Deprecated Functions
