@@ -154,7 +154,7 @@ MDSH_MODULE=
     fi
 }
 @module() {
-    ! [[ $MDSH_MODULE ]] || return
+    ! [[ $MDSH_MODULE ]] || return 0
     set -- "${1:-${MDSH_SOURCE-}}"
     echo "#!/usr/bin/env bash"
     echo "# ---"
@@ -163,7 +163,7 @@ MDSH_MODULE=
     echo
 }
 @main() {
-    ! [[ $MDSH_MODULE ]] || return
+    ! [[ $MDSH_MODULE ]] || return 0
     echo '# --- All functions have been defined, main script starts here! ---'
     echo 'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"' "$@"; exit $?; fi'
 }

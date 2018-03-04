@@ -301,7 +301,7 @@ Output a shebang header and an "automatically-generated from" notice, if buildin
 
 ```shell
 @module() {
-    ! [[ $MDSH_MODULE ]] || return
+    ! [[ $MDSH_MODULE ]] || return 0
     set -- "${1:-${MDSH_SOURCE-}}"
     echo "#!/usr/bin/env bash"
     echo "# ---"
@@ -317,7 +317,7 @@ Output code to run `$1` as the main function, if building a top-level module.
 
 ```shell
 @main() {
-    ! [[ $MDSH_MODULE ]] || return
+    ! [[ $MDSH_MODULE ]] || return 0
     echo '# --- All functions have been defined, main script starts here! ---'
     echo 'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"' "$@"; exit $?; fi'
 }
