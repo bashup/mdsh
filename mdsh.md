@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 : '
-<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; return $? # -->
+<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell\( main\)\?$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; return $? # -->
 # mdsh: a self-hosted Markdown-to-Shell Compiler
 
 ``mdsh`` is a compiler and interpreter for literate programs written in markdown and bash, that is itself written as a literate program in markdown and bash.
@@ -362,7 +362,7 @@ extract-between() { sed -ne '/'"$1"'/,/'"$2"'/ { s/\('"$1"'\)/'"${3-}"'/; s/'"$2
 
 ### Run Main
 
-```shell
+```shell main
 # --- All functions have been defined, main script starts here! ---
 
 # check bash-source and run main only if directly executing
