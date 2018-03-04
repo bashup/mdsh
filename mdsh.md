@@ -81,8 +81,10 @@ mdsh-parse() {
 
 ```shell
 mdsh-source() {
-    (($#)) && [[ $1 != '-' ]] && exec <"$1"  # take a file or stdin
-    mdsh-parse __COMPILE__
+    if [[ ${1:--} != '-' ]]; then
+         mdsh-parse __COMPILE__ <"$1"
+    else mdsh-parse __COMPILE__
+    fi
 }
 ```
 
@@ -145,13 +147,17 @@ mdsh-rewrite() {
 
 ### Default Languages and Data Handling
 
-By default, `mdsh` supports only `mdsh` and `shell` blocks, with everything else handled as data.  Blocks with no language, however, are ignored:
+By default, `mdsh` supports only `mdsh` and `shell` blocks, with everything else handled as data.  Blocks with no language are ignored, and `mdsh main` and `shell main` blocks are only compiled if a module load is not in progress (i.e., the current file is a "main" file):
 
 ```shell
 mdsh-misc()          { mdsh-data "$@"; }    # Treat unknown languages as data
 mdsh-compile-()      { :; }                 # Ignore language-less blocks
+
 mdsh-compile-mdsh()  { eval "$1"; }         # Execute `mdsh` blocks in-line
+mdsh-compile-mdsh_main() { [[ $MDSH_MODULE ]] || eval "$1"; }
+
 mdsh-compile-shell() { printf '%s' "$1"; }  # Copy `shell` blocks to the output
+mdsh-compile-shell_main() { [[ $MDSH_MODULE ]] || printf '%s' "$1"; }
 ```
 
 Data blocks are processed by emitting code to add the block contents to an `mdsh_raw_X` variable:
@@ -162,11 +168,14 @@ mdsh-data() {
 }
 ```
 
-And for syntax highlighting convenience, `shell mdsh` blocks are treated as `mdsh` blocks:
+And for syntax highlighting convenience, `shell mdsh` blocks and `shell mdsh main` blocks are treated as `mdsh` and `mdsh main` blocks, respectively:
 
 ```shell
 mdsh-compile-shell_mdsh() {
     indent= fence='```' __COMPILE__ fenced mdsh "$1"
+}
+mdsh-compile-shell_mdsh_main() {
+    indent= fence='```' __COMPILE__ fenced "mdsh main" "$1"
 }
 ```
 
@@ -277,7 +286,7 @@ mdsh.-h() { mdsh.--help "$@"; }
 
 ### mdsh-embed
 
-Embed a module's source in such a way that it believes itself to be `source`d when executed.
+Embed a bash module's source in such a way that it believes itself to be `source`d when executed.
 
 ```shell
 mdsh-embed() {
@@ -290,6 +299,22 @@ mdsh-embed() {
         let ctr++; boundary="# --- EOF $base.$ctr ---"
     done
     printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
+}
+```
+
+### mdsh-module
+
+`mdsh-module` *modulename cmd [args...]* will run *cmd args...* if it is the first call to `mdsh-module` for that *modulename*.  The *cmd* should usually be `mdsh-source` or `mdsh-embed`, to include markdown modules or shell script modules, respectively, but it can be any command or function.  During execution of *cmd*, `MDSH_MODULE` will be set to *modulename*, allowing the running code to know it's being used as a module, potentially compiling itself differently.  (Normally, `MDSH_MODULE` is empty.)
+
+```shell
+MDSH_LOADED_MODULES=
+MDSH_MODULE=
+
+mdsh-module() {
+    if ! [[ $MDSH_LOADED_MODULES == *"<$1>"* ]]; then
+        MDSH_LOADED_MODULES+="<$1>"; local MDSH_MODULE=$1
+        "${@:2}"
+    fi
 }
 ```
 
