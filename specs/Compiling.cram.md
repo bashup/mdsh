@@ -368,7 +368,7 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     $ mdsh-make ../t1.md t1 echo building
     $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
     0
-    $ touch ../t1.md
+    $ touch ../t1.md -d '2011-01-01 23:10'
     $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
     1
     $ mdsh-make ../t1.md t1 echo building
