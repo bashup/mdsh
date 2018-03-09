@@ -1,0 +1,5 @@
+language: bash
+script: script/test
+os:
+  - linux
+  - osx
