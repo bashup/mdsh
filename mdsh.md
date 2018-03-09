@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 : '
-<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; eval "$(@main mdsh-main; echo $MDSH_FOOTER; unset MDSH_FOOTER; mdsh-main -E /dev/null)"; # -->
+<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p;}' "$BASH_SOURCE")"; eval "$(@main mdsh-main; echo $MDSH_FOOTER; unset MDSH_FOOTER; mdsh-main -E /dev/null)"; # -->
 # mdsh: a self-hosted Markdown-to-Shell Compiler
 
 ``mdsh`` is a compiler and interpreter for literate programs written in markdown and bash, that is itself written as a literate program in markdown and bash.  In the compiled distribution, it contains a LICENSE header (see [LICENSE](LICENSE) file for the terms that apply to this source file as well as the compiled version):
@@ -369,8 +369,15 @@ mdsh-embed() {
 Compile file `$1` to file `$2` if the destination doesn't exist or doesn't have the same timestamp.  Compilation happens in a subshell, and any additional arguments are treated as a command to be run inside the subshell before the compilation.  (They're only run if compilation is about to occur.)  If compilation happens and is successful, `$2` is touched to the same timestamp as `$1`.
 
 ```shell
+fstamp() {
+    if ! stat -c %y "$1" 2>/dev/null; then
+        fstamp() { stat -f %m "$1"; }
+        fstamp "$1";
+    fi
+} 2>/dev/null
+
 mdsh-make() {
-    [[ -f "$2" && "$(stat -c %y "$1")" == "$(stat -c %y "$2")" ]] || {
+    [[ -f "$2" && "$(fstamp "$1")" == "$(fstamp "$2")" ]] || {
         ( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
     }
 }

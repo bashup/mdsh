@@ -363,16 +363,16 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     building
     $ cat t1
     echo yep
-    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
     0
     $ mdsh-make ../t1.md t1 echo building
-    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
     0
-    $ touch ../t1.md -d '2011-01-01 23:10'
-    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    $ touch ../t1.md -t 201101012310.45
+    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
     1
     $ mdsh-make ../t1.md t1 echo building
     building
-    $ [[ "$(stat -c %y ../t1.md)" == "$(stat -c %y t1)" ]]; echo $?
+    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
     0
 ```
