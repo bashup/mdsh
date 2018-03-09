@@ -168,13 +168,11 @@ MDSH_MODULE=
     MDSH_FOOTER+=$'# --- All functions have been defined, main script starts here! ---\n'
     MDSH_FOOTER+=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
 }
-@comment() {
-    [[ $MDSH_MODULE ]] || (
-        ! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"
-        sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
-        echo
-    )
-}
+@comment() (  # subshell for cd
+    ! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"
+    sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
+    echo
+)
 mdsh-embed() {
     local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=
     [[ $f == */* && -f $f ]] || f=$(command -v "$f") || {

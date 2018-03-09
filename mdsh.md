@@ -7,7 +7,7 @@
 
 ```shell mdsh main
 @module mdsh.md
-@comment LICENSE
+@import pjeby/license @comment LICENSE
 ```
 
 And it expects to run in "bash strict mode":
@@ -334,16 +334,14 @@ Output code to run `$1` as the main function, if building a top-level module.
 
 ### @comment
 
-If building a top-level module, output the specified file(s) as shell-commented lines, followed by a single blank line.  If `MDSH_SOURCE` is defined (as when compiling from the command line), paths are interpreted relative to its directory (*without* taking symlinks into account).
+Output the specified file(s) as shell-commented lines, followed by a single blank line.  If `MDSH_SOURCE` is defined (as when compiling from the command line), paths are interpreted relative to its directory (*without* taking symlinks into account).
 
 ```shell
-@comment() {
-    [[ $MDSH_MODULE ]] || (
-        ! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"
-        sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
-        echo
-    )
-}
+@comment() (  # subshell for cd
+    ! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"
+    sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
+    echo
+)
 ```
 
 ## Utility Functions
