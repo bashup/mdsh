@@ -165,7 +165,6 @@ MDSH_MODULE=
 }
 @main() {
     ! [[ $MDSH_MODULE ]] || return 0
-    MDSH_FOOTER+=$'# --- All functions have been defined, main script starts here! ---\n'
     MDSH_FOOTER+=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
 }
 @comment() (  # subshell for cd
@@ -192,5 +191,4 @@ mdsh-make() {
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() { source <(mdsh-source "${1--}") "${@:2}"; }
-# --- All functions have been defined, main script starts here! ---
 if [[ $0 == "$BASH_SOURCE" ]]; then mdsh-main "$@"; fi

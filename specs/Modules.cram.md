@@ -109,7 +109,6 @@ The result is different depending on whether it's done as a module or not:
     > EOF
     # code
     # more code
-    # --- All functions have been defined, main script starts here! ---
     if [[ $0 == "$BASH_SOURCE" ]]; then foo "$@"; fi
 ~~~
 
