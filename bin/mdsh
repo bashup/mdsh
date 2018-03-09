@@ -124,7 +124,7 @@ mdsh.--eval() {
 mdsh.-E() { mdsh.--eval "$@"; }
 mdsh.--out() {
     if REPLY=("$(mdsh-main "${@:2}")"); then
-        echo "$REPLY" >"$1";
+        exec echo "$REPLY" >"$1"   # handle self-compiling properly
     else exit $?;
     fi
 }
@@ -184,9 +184,9 @@ mdsh-embed() {
     printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
 }
 mdsh-make() {
-    [[ -f "$2" && "$(stat -c %y "$1")" == "$(stat -c %y "$2")" ]] || (
-        "${@:3}" && mdsh-main --out "$2" --compile "$1" && touch -r "$1" "$2"
-    )
+    [[ -f "$2" && "$(stat -c %y "$1")" == "$(stat -c %y "$2")" ]] || {
+        ( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
+    }
 }
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments

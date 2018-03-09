@@ -253,7 +253,7 @@ Send output to the named file, overwriting it in place if and only if the compil
 ```shell
 mdsh.--out() {
     if REPLY=("$(mdsh-main "${@:2}")"); then
-        echo "$REPLY" >"$1";
+        exec echo "$REPLY" >"$1"   # handle self-compiling properly
     else exit $?;
     fi
 }
@@ -369,9 +369,9 @@ Compile file `$1` to file `$2` if the destination doesn't exist or doesn't have 
 
 ```shell
 mdsh-make() {
-    [[ -f "$2" && "$(stat -c %y "$1")" == "$(stat -c %y "$2")" ]] || (
-        "${@:3}" && mdsh-main --out "$2" --compile "$1" && touch -r "$1" "$2"
-    )
+    [[ -f "$2" && "$(stat -c %y "$1")" == "$(stat -c %y "$2")" ]] || {
+        ( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
+    }
 }
 ```
 
