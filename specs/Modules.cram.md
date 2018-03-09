@@ -103,11 +103,15 @@ The result is different depending on whether it's done as a module or not:
     $ mdsh-source <<'EOF'
     > ```mdsh
     > echo "# code"
-    > @main foo
+    > @main bar
+    > @import whee mdsh-source "$TESTDIR/$TESTFILE"
+    > @main foo   # only the last call to @main counts
     > echo "# more code"
     > ```
     > EOF
     # code
+    # This line is always here
+    # And so is this
     # more code
     if [[ $0 == "$BASH_SOURCE" ]]; then foo "$@"; fi
 ~~~

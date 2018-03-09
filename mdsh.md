@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 : '
-<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; eval "$(@main mdsh-main; mdsh-main -E /dev/null)"; # -->
+<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p}' "$BASH_SOURCE")"; eval "$(@main mdsh-main; echo $MDSH_FOOTER; unset MDSH_FOOTER; mdsh-main -E /dev/null)"; # -->
 # mdsh: a self-hosted Markdown-to-Shell Compiler
 
 ``mdsh`` is a compiler and interpreter for literate programs written in markdown and bash, that is itself written as a literate program in markdown and bash.  In the compiled distribution, it contains a LICENSE header (see [LICENSE](LICENSE) file for the terms that apply to this source file as well as the compiled version):
@@ -84,6 +84,7 @@ mdsh-parse() {
 
 ```shell
 mdsh-source() {
+    local MDSH_FOOTER=
     if [[ ${1:--} != '-' ]]; then
          mdsh-parse __COMPILE__ <"$1"
     else mdsh-parse __COMPILE__
@@ -327,7 +328,7 @@ Output code to run `$1` as the main function, if building a top-level module.
 ```shell
 @main() {
     ! [[ $MDSH_MODULE ]] || return 0
-    MDSH_FOOTER+=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
+    MDSH_FOOTER=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
 }
 ```
 

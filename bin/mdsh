@@ -35,6 +35,7 @@ mdsh-parse() {
     done
 }
 mdsh-source() {
+    local MDSH_FOOTER=
     if [[ ${1:--} != '-' ]]; then
          mdsh-parse __COMPILE__ <"$1"
     else mdsh-parse __COMPILE__
@@ -165,7 +166,7 @@ MDSH_MODULE=
 }
 @main() {
     ! [[ $MDSH_MODULE ]] || return 0
-    MDSH_FOOTER+=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
+    MDSH_FOOTER=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
 }
 @comment() (  # subshell for cd
     ! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"
