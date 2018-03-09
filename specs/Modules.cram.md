@@ -104,10 +104,18 @@ The following APIs don't produce any output, except in the top-level module (i.e
 
 #### @main
 
-`@main` *funcname* adds code to the end of the currently-compiling file that will execute *funcname*, if and only if the executing file is the top-level bash script (i.e., not being sourced):
+`@main` *funcname* adds code to the **end** of the currently-compiling file that will execute *funcname*, if and only if the executing file is the top-level bash script (i.e., not being sourced):
 
 ~~~shell
-    $ @main foo; mdsh-source /dev/null
+    $ mdsh-source <<'EOF'
+    > ```mdsh
+    > echo "# code"
+    > @main foo
+    > echo "# more code"
+    > ```
+    > EOF
+    # code
+    # more code
     # --- All functions have been defined, main script starts here! ---
     if [[ $0 == "$BASH_SOURCE" ]]; then foo "$@"; fi
 ~~~

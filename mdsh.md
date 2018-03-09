@@ -88,6 +88,7 @@ mdsh-source() {
          mdsh-parse __COMPILE__ <"$1"
     else mdsh-parse __COMPILE__
     fi
+    ${MDSH_FOOTER:+ printf %s "$MDSH_FOOTER"}; MDSH_FOOTER=
 }
 ```
 
@@ -326,8 +327,8 @@ Output code to run `$1` as the main function, if building a top-level module.
 ```shell
 @main() {
     ! [[ $MDSH_MODULE ]] || return 0
-    echo '# --- All functions have been defined, main script starts here! ---'
-    echo 'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"' "$@"; fi'
+    MDSH_FOOTER+=$'# --- All functions have been defined, main script starts here! ---\n'
+    MDSH_FOOTER+=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
 }
 ```
 
