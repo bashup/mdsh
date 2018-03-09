@@ -191,10 +191,10 @@ The command line interface looks for functions named `mdsh.OPT` to process optio
 ```shell
 # Main program: check for arguments and run markdown script
 mdsh-main() {
-    (($#)) || mdsh-error "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]" "${0#*/}"
+    (($#)) || mdsh-error "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]" "${0##*/}"
     case "$1" in
     --) mdsh-interpret "${@:2}" ;;
-    --*|-?) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0#*/}" "$1"
+    --*|-?) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0##*/}" "$1"
         "mdsh.$1" "${@:2}"
         ;;
     -??*) mdsh-main "${1::2}" "-${1:2}" "${@:2}" ;;  # split '-abc' into '-a -bc' and recurse
@@ -223,7 +223,7 @@ Compile one or more files, appending the results to stdout.  `mdsh` blocks in ea
 
 ```shell
 mdsh.--compile() {
-    (($#)) || mdsh-error "Usage: %s --compile FILENAME..." "${0#*/}"
+    (($#)) || mdsh-error "Usage: %s --compile FILENAME..." "${0##*/}"
     ! fn-exists mdsh:file-header || mdsh:file-header
     for REPLY; do MDSH_SOURCE=$REPLY mdsh-compile "$REPLY"; done
     ! fn-exists mdsh:file-footer || mdsh:file-footer
@@ -239,7 +239,7 @@ Compile one file, which *cannot* be stdin.  Adds a suffix to ensure the compiled
 ```shell
 mdsh.--eval() {
     (($# == 1)) && [[ $1 != - ]] ||
-        mdsh-error "Usage: %s --eval FILENAME" "${0#*/}"
+        mdsh-error "Usage: %s --eval FILENAME" "${0##*/}"
     mdsh.--compile "$1"
     echo $'__status=$? eval \'return $__status || exit $__status\' 2>/dev/null'
 }
@@ -273,7 +273,7 @@ mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 
 ```shell
 mdsh.--help() {
-    printf "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n" "${0#*/}"
+    printf "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n" "${0##*/}"
     echo -e '
 Run and/or compile code blocks from markdownfile(s) to bash.
 Use a filename of `-` to run or compile from stdin.

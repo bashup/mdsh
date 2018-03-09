@@ -4,8 +4,7 @@
 
 Our fixture and helper:
 
-    $ ln -s $TESTDIR/../mdsh.md mdsh
-    $ mdsh() { ./mdsh "$@"; }
+    $ mdsh() { $TESTDIR/../mdsh.md "$@"; }
     $ cat >t1.md <<'EOF'
     > ```shell
     > echo yep
@@ -51,27 +50,27 @@ Errors:
 
 
     $ mdsh
-    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
     $ mdsh --compile
-    Usage: mdsh --compile FILENAME...
+    Usage: mdsh.md --compile FILENAME...
     [64]
     $ mdsh --eval
-    Usage: mdsh --eval FILENAME
+    Usage: mdsh.md --eval FILENAME
     [64]
     $ mdsh --eval - </dev/null
-    Usage: mdsh --eval FILENAME
+    Usage: mdsh.md --eval FILENAME
     [64]
     $ mdsh --compiler
-    mdsh: unrecognized option: --compiler
+    mdsh.md: unrecognized option: --compiler
     [64]
     $ mdsh -- --compile t1.md
-    ./mdsh: line *: --compile: No such file or directory (glob)
+    */mdsh.md: line *: --compile: No such file or directory (glob)
 
 Help:
 
     $ mdsh --help
-    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
     
     Run and/or compile code blocks from markdownfile(s) to bash.
     Use a filename of `-` to run or compile from stdin.
@@ -320,7 +319,7 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     fail
 
     $ mdsh -o x || echo [$?]
-    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
 
     $ ls x || echo fail

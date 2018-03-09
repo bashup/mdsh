@@ -4,13 +4,12 @@ It should be possible to extend mdsh by sourcing it:
 
     $ cat >foosh <<'EOF'
     > #!/usr/bin/env bash
-    > source ./mdsh
+    > source $TESTDIR/../mdsh.md
     > mdsh:file-header() { echo 'echo "# header"'; }
     > mdsh:file-footer() { echo 'echo "# footer"'; }
     > if [[ $0 == $BASH_SOURCE ]]; then mdsh-main "$@"; fi
     > EOF
     $ chmod +x foosh
-    $ ln -s "$TESTDIR/../mdsh.md" mdsh
 
 And the result should give error/help messages under its new name:
 
