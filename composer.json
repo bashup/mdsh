@@ -1,0 +1,27 @@
+{
+    "name": "bashup/mdsh",
+    "license": "MIT",
+    "description": "Multi-lingual, Markdown-based Literate Shell Programming",
+    "homepage": "https://github.com/bashup/mdsh/",
+    "authors": [
+        {
+            "name": "PJ Eby",
+            "homepage": "https://github.com/pjeby"
+        }
+    ],
+    "keywords": [
+        "markdown",
+        "bash",
+        "shell-scripting",
+        "literate-programming"
+    ],
+    "support": {
+        "issues": "https://github.com/bashup/mdsh/issues"
+    },
+    "scripts": {
+        "test": "script/test"
+    },
+    "bin": [
+        "bin/mdsh"
+    ]
+}

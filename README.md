@@ -56,7 +56,12 @@ print("hello world!")
 
 ## Installation
 
-If you have [basher](https://github.com/basherpm/basher), you can install `mdsh` by running `basher install bashup/mdsh`.  Otherwise just clone this repo and copy or link the `mdsh` file to a directory on your `PATH`.  (Or just [download the script directly](https://github.com/bashup/mdsh/raw/master/bin/mdsh) to a directory on your `PATH`.)
+`mdsh` can be installed in any of the following ways:
+
+* Using [basher](https://github.com/basherpm/basher), via `basher install bashup/mdsh`
+* Using [composer](https://getcomposer.org/), via `composer require bashup/mdsh:dev-master` (to add it to your project) or `composer global require bashup/mdsh:dev-master` (to install it globally)
+* Using git, by cloning this repo and copying or linking the `bin/mdsh` file to a directory on your `PATH`, or
+* Just [downloading the script directly](https://github.com/bashup/mdsh/raw/master/bin/mdsh) to a directory on your `PATH`, then running `chmod +x` on it)
 
 ## Usage
 
