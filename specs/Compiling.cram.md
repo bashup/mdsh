@@ -356,7 +356,7 @@ Passing `--out *file*` as the first option overwrites that file with the compila
 ### Building an Output File with mdsh-make
 
 ```shell
-    $ source mdsh; set +e
+    $ source $TESTDIR/../mdsh.md; set +e
     $ mkdir t; cd t
     $ mdsh-make ../t1.md t1 echo building
     building
