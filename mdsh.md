@@ -383,6 +383,23 @@ mdsh-make() {
 }
 ```
 
+### mdsh-cache
+
+Using cache directory `$1`, and cache key `$3` to generate a filename, run `mdsh-make` to build source file `$2`.  Any additional arguments are passed to `mdsh-make` as a pre-compile command.  The actual cache file name is an escaped form of `$3` (to remove `/` and other special characters).  If empty or not given, `$3` defaults to `$2`.  The cache directory is created if it does not exist.
+
+```shell
+mdsh-cache() {
+    [[ -d "$1" ]] || mkdir -p "$1"
+    flatname "${3:-$2}"; mdsh-make "$2" "$1/$REPLY" "${@:4}"
+}
+
+flatname() {
+    REPLY="${1//"%"/"%25"}"; REPLY="${REPLY//"/"/"%2F"}"; REPLY="${REPLY/#./"%2E"}"
+    REPLY="${REPLY//'\'/%5C}"
+}
+```
+
+
 ### run-markdown
 
 ```shell

@@ -375,3 +375,25 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
     0
 ```
+
+### Caching with mdsh-cache
+
+Automatic cache dir creation, name flattening, and make:
+
+~~~shell
+    $ cd ..
+    $ mdsh-cache my-cache t1.md "" echo building
+    building
+    $ ls my-cache
+    t1.md
+    $ cat my-cache/t1.md
+    echo yep
+    $ mdsh-cache my-cache t1.md ./t/../t1.md echo again
+    again
+    $ ls my-cache
+    %2E%2Ft%2F..%2Ft1.md
+    t1.md
+    $ cat my-cache/%2E%2Ft%2F..%2Ft1.md
+    echo yep
+    $ mdsh-cache my-cache t1.md ./t/../t1.md echo again
+~~~

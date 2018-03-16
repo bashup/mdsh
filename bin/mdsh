@@ -196,6 +196,15 @@ mdsh-make() {
         ( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
     }
 }
+mdsh-cache() {
+    [[ -d "$1" ]] || mkdir -p "$1"
+    flatname "${3:-$2}"; mdsh-make "$2" "$1/$REPLY" "${@:4}"
+}
+
+flatname() {
+    REPLY="${1//"%"/"%25"}"; REPLY="${REPLY//"/"/"%2F"}"; REPLY="${REPLY/#./"%2E"}"
+    REPLY="${REPLY//'\'/%5C}"
+}
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() { source <(mdsh-source "${1--}") "${@:2}"; }
