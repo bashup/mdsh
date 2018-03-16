@@ -59,18 +59,18 @@ The `$fence` and `$indent` variables can be inspected to tell what the block's o
 
 ```shell
 mdsh-parse() {
-    local cmd=$1 lang block ln indent fence close_fence indent_remove
-    local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
-    while IFS= read -r ln; do
-        if [[ $ln =~ $open_fence ]]; then
-            indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
-            close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
-            while IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
-                ! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
-            done
-            lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
-        fi
-    done
+	local cmd=$1 lang block ln indent fence close_fence indent_remove
+	local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
+	while IFS= read -r ln; do
+		if [[ $ln =~ $open_fence ]]; then
+			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
+			close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
+			while IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
+				! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
+			done
+			lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
+		fi
+	done
 }
 ```
 
@@ -84,12 +84,12 @@ mdsh-parse() {
 
 ```shell
 mdsh-source() {
-    local MDSH_FOOTER=
-    if [[ ${1:--} != '-' ]]; then
-         mdsh-parse __COMPILE__ <"$1"
-    else mdsh-parse __COMPILE__
-    fi
-    ${MDSH_FOOTER:+ printf %s "$MDSH_FOOTER"}; MDSH_FOOTER=
+	local MDSH_FOOTER=
+	if [[ ${1:--} != '-' ]]; then
+		mdsh-parse __COMPILE__ <"$1"
+	else mdsh-parse __COMPILE__
+	fi
+	${MDSH_FOOTER:+ printf %s "$MDSH_FOOTER"}; MDSH_FOOTER=
 }
 ```
 
@@ -101,7 +101,7 @@ mdsh-source() {
 
 ```shell
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
-    mdsh-source "$@"
+	mdsh-source "$@"
 )
 ```
 
@@ -111,24 +111,24 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
 
 ```shell
 __COMPILE__() {
-    [[ $1 == fenced && $fence == '```' && ! $indent ]] || return 0  # only unindented ``` code
-    local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
-    local tag_words=($2);  # check for command blocks first
-    if [[ ${tag_words[1]-} == '!'* ]]; then
-        set -- "$3" "$2"; eval "${2#*!}"; return
-    elif [[ ${tag_words[1]-} == '|'* ]]; then
-        echo "${2#*|} <<'\`\`\`'"; printf '%s```\n' "$3"; return
-    elif fn-exists mdsh-lang-$lang; then
-        mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; printf '%s```\n' "$3"
-    elif fn-exists mdsh-compile-$lang; then
-        mdsh-compile-$lang "$3"
-    else
-        mdsh-misc "$2" "$3"
-    fi
+	[[ $1 == fenced && $fence == '```' && ! $indent ]] || return 0  # only unindented ``` code
+	local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
+	local tag_words=($2);  # check for command blocks first
+	if [[ ${tag_words[1]-} == '!'* ]]; then
+		set -- "$3" "$2"; eval "${2#*!}"; return
+	elif [[ ${tag_words[1]-} == '|'* ]]; then
+		echo "${2#*|} <<'\`\`\`'"; printf '%s```\n' "$3"; return
+	elif fn-exists mdsh-lang-$lang; then
+		mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; printf '%s```\n' "$3"
+	elif fn-exists mdsh-compile-$lang; then
+		mdsh-compile-$lang "$3"
+	else
+		mdsh-misc "$2" "$3"
+	fi
 
-    if fn-exists mdsh-after-$lang; then
-        mdsh-rewrite mdsh-after-$lang
-    fi
+	if fn-exists mdsh-after-$lang; then
+		mdsh-rewrite mdsh-after-$lang
+	fi
 }
 ```
 
@@ -146,7 +146,7 @@ fn-exists() { declare -F -- "$1"; } >/dev/null
 ```shell
 # Output body of func $1, optionally replacing the opening/closing { and } with $2 and $3
 mdsh-rewrite() {
-    declare -f $1 | sed -e '1d; 2s/^{ $/'"${2-"{"}"'/; $s/^}$/'"${3-"\}"}"'/'
+	declare -f $1 | sed -e '1d; 2s/^{ $/'"${2-"{"}"'/; $s/^}$/'"${3-"\}"}"'/'
 }
 ```
 
@@ -169,7 +169,7 @@ Data blocks are processed by emitting code to add the block contents to an `mdsh
 
 ```shell
 mdsh-data() {
-    printf "mdsh_raw_${1//[^_[:alnum:]]/_}+=(%q)\n" "$2"
+	printf "mdsh_raw_${1//[^_[:alnum:]]/_}+=(%q)\n" "$2"
 }
 ```
 
@@ -177,10 +177,10 @@ And for syntax highlighting convenience, `shell mdsh` blocks and `shell mdsh mai
 
 ```shell
 mdsh-compile-shell_mdsh() {
-    indent= fence='```' __COMPILE__ fenced mdsh "$1"
+	indent= fence='```' __COMPILE__ fenced mdsh "$1"
 }
 mdsh-compile-shell_mdsh_main() {
-    indent= fence='```' __COMPILE__ fenced "mdsh main" "$1"
+	indent= fence='```' __COMPILE__ fenced "mdsh main" "$1"
 }
 ```
 
@@ -191,15 +191,15 @@ The command line interface looks for functions named `mdsh.OPT` to process optio
 ```shell
 # Main program: check for arguments and run markdown script
 mdsh-main() {
-    (($#)) || mdsh-error "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]" "${0##*/}"
-    case "$1" in
-    --) mdsh-interpret "${@:2}" ;;
-    --*|-?) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0##*/}" "$1"
-        "mdsh.$1" "${@:2}"
-        ;;
-    -??*) mdsh-main "${1::2}" "-${1:2}" "${@:2}" ;;  # split '-abc' into '-a -bc' and recurse
-    *)  mdsh-interpret "$@" ;;
-    esac
+	(($#)) || mdsh-error "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]" "${0##*/}"
+	case "$1" in
+	--) mdsh-interpret "${@:2}" ;;
+	--*|-?) fn-exists "mdsh.$1" || mdsh-error "%s: unrecognized option: %s" "${0##*/}" "$1"
+		"mdsh.$1" "${@:2}"
+		;;
+	-??*) mdsh-main "${1::2}" "-${1:2}" "${@:2}" ;;  # split '-abc' into '-a -bc' and recurse
+	*)  mdsh-interpret "$@" ;;
+	esac
 }
 ```
 
@@ -212,8 +212,8 @@ As described in the documentation, markdown files are run with an empty  `$0` an
 # MDSH_ZERO pointing to the original $0.
 
 function mdsh-interpret() {
-    printf -v cmd 'eval "$(%q --compile %q)"' "$0" "$1"
-    MDSH_ZERO="$1" exec bash -c "$cmd" "" "${@:2}"
+	printf -v cmd 'eval "$(%q --compile %q)"' "$0" "$1"
+	MDSH_ZERO="$1" exec bash -c "$cmd" "" "${@:2}"
 }
 ```
 
@@ -223,10 +223,10 @@ Compile one or more files, appending the results to stdout.  `mdsh` blocks in ea
 
 ```shell
 mdsh.--compile() {
-    (($#)) || mdsh-error "Usage: %s --compile FILENAME..." "${0##*/}"
-    ! fn-exists mdsh:file-header || mdsh:file-header
-    for REPLY; do MDSH_SOURCE=$REPLY mdsh-compile "$REPLY"; done
-    ! fn-exists mdsh:file-footer || mdsh:file-footer
+	(($#)) || mdsh-error "Usage: %s --compile FILENAME..." "${0##*/}"
+	! fn-exists mdsh:file-header || mdsh:file-header
+	for REPLY; do MDSH_SOURCE=$REPLY mdsh-compile "$REPLY"; done
+	! fn-exists mdsh:file-footer || mdsh:file-footer
 }
 
 mdsh.-c() { mdsh.--compile "$@"; }
@@ -238,10 +238,10 @@ Compile one file, which *cannot* be stdin.  Adds a suffix to ensure the compiled
 
 ```shell
 mdsh.--eval() {
-    (($# == 1)) && [[ $1 != - ]] ||
-        mdsh-error "Usage: %s --eval FILENAME" "${0##*/}"
-    mdsh.--compile "$1"
-    echo $'__status=$? eval \'return $__status || exit $__status\' 2>/dev/null'
+	(($# == 1)) && [[ $1 != - ]] ||
+		mdsh-error "Usage: %s --eval FILENAME" "${0##*/}"
+	mdsh.--compile "$1"
+	echo $'__status=$? eval \'return $__status || exit $__status\' 2>/dev/null'
 }
 
 mdsh.-E() { mdsh.--eval "$@"; }
@@ -253,10 +253,10 @@ Send output to the named file, overwriting it in place if and only if the compil
 
 ```shell
 mdsh.--out() {
-    if REPLY=("$(mdsh-main "${@:2}")"); then
-        exec echo "$REPLY" >"$1"   # handle self-compiling properly
-    else exit $?;
-    fi
+	if REPLY=("$(mdsh-main "${@:2}")"); then
+		exec echo "$REPLY" >"$1"   # handle self-compiling properly
+	else exit $?;
+	fi
 }
 
 mdsh.-o() { mdsh.--out "$@"; }
@@ -273,8 +273,8 @@ mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
 
 ```shell
 mdsh.--help() {
-    printf "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n" "${0##*/}"
-    echo -e '
+	printf "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n" "${0##*/}"
+	echo -e '
 Run and/or compile code blocks from markdownfile(s) to bash.
 Use a filename of `-` to run or compile from stdin.
 
@@ -298,10 +298,10 @@ MDSH_LOADED_MODULES=
 MDSH_MODULE=
 
 @import() {
-    if ! [[ $MDSH_LOADED_MODULES == *"<$1>"* ]]; then
-        MDSH_LOADED_MODULES+="<$1>"; local MDSH_MODULE=$1
-        "${@:2}"
-    fi
+	if ! [[ $MDSH_LOADED_MODULES == *"<$1>"* ]]; then
+		MDSH_LOADED_MODULES+="<$1>"; local MDSH_MODULE=$1
+		"${@:2}"
+	fi
 }
 ```
 
@@ -311,13 +311,13 @@ Output a shebang header and an "automatically-generated from" notice, if buildin
 
 ```shell
 @module() {
-    ! [[ $MDSH_MODULE ]] || return 0
-    set -- "${1:-${MDSH_SOURCE-}}"
-    echo "#!/usr/bin/env bash"
-    echo "# ---"
-    echo "# This file is automatically generated from ${1##*/} - DO NOT EDIT"
-    echo "# ---"
-    echo
+	! [[ $MDSH_MODULE ]] || return 0
+	set -- "${1:-${MDSH_SOURCE-}}"
+	echo "#!/usr/bin/env bash"
+	echo "# ---"
+	echo "# This file is automatically generated from ${1##*/} - DO NOT EDIT"
+	echo "# ---"
+	echo
 }
 ```
 
@@ -327,8 +327,8 @@ Output code to run `$1` as the main function, if building a top-level module.
 
 ```shell
 @main() {
-    ! [[ $MDSH_MODULE ]] || return 0
-    MDSH_FOOTER=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
+	! [[ $MDSH_MODULE ]] || return 0
+	MDSH_FOOTER=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
 }
 ```
 
@@ -338,9 +338,9 @@ Output the specified file(s) as shell-commented lines, followed by a single blan
 
 ```shell
 @comment() (  # subshell for cd
-    ! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"
-    sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
-    echo
+	! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"
+	sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
+	echo
 )
 ```
 
@@ -352,15 +352,15 @@ Embed a bash module's source in such a way that it believes itself to be `source
 
 ```shell
 mdsh-embed() {
-    local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=
-    [[ $f == */* && -f $f ]] || f=$(command -v "$f") || {
-        echo "Can't find module $1" >&2; return 69  # EX_UNAVAILABLE
-    }
-    contents=$'\n'$(<"$f")$'\n'
-    while [[ $contents == *$'\n'"$boundary"$'\n'* ]]; do
-        let ctr++; boundary="# --- EOF $base.$ctr ---"
-    done
-    printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
+	local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=
+	[[ $f == */* && -f $f ]] || f=$(command -v "$f") || {
+		echo "Can't find module $1" >&2; return 69  # EX_UNAVAILABLE
+	}
+	contents=$'\n'$(<"$f")$'\n'
+	while [[ $contents == *$'\n'"$boundary"$'\n'* ]]; do
+		let ctr++; boundary="# --- EOF $base.$ctr ---"
+	done
+	printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
 }
 ```
 
@@ -370,16 +370,16 @@ Compile file `$1` to file `$2` if the destination doesn't exist or doesn't have 
 
 ```shell
 fstamp() {
-    if ! stat -c %y "$1" 2>/dev/null; then
-        fstamp() { stat -f %m "$1"; }
-        fstamp "$1";
-    fi
+	if ! stat -c %y "$1" 2>/dev/null; then
+		fstamp() { stat -f %m "$1"; }
+		fstamp "$1";
+	fi
 } 2>/dev/null
 
 mdsh-make() {
-    [[ -f "$1" && -f "$2" && "$(fstamp "$1")" == "$(fstamp "$2")" ]] || {
-        ( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
-    }
+	[[ -f "$1" && -f "$2" && "$(fstamp "$1")" == "$(fstamp "$2")" ]] || {
+		( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
+	}
 }
 ```
 
@@ -389,13 +389,13 @@ Using cache directory `$1`, and cache key `$3` to generate a filename, run `mdsh
 
 ```shell
 mdsh-cache() {
-    [[ -d "$1" ]] || mkdir -p "$1"
-    flatname "${3:-$2}"; mdsh-make "$2" "$1/$REPLY" "${@:4}"
+	[[ -d "$1" ]] || mkdir -p "$1"
+	flatname "${3:-$2}"; mdsh-make "$2" "$1/$REPLY" "${@:4}"
 }
 
 flatname() {
-    REPLY="${1//"%"/"%25"}"; REPLY="${REPLY//"/"/"%2F"}"; REPLY="${REPLY/#./"%2E"}"
-    REPLY="${REPLY//'\'/%5C}"
+	REPLY="${1//"%"/"%25"}"; REPLY="${REPLY//"/"/"%2F"}"; REPLY="${REPLY/#./"%2E"}"
+	REPLY="${REPLY//'\'/%5C}"
 }
 ```
 
