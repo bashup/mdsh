@@ -192,7 +192,7 @@ fstamp() {
 } 2>/dev/null
 
 mdsh-make() {
-    [[ -f "$2" && "$(fstamp "$1")" == "$(fstamp "$2")" ]] || {
+    [[ -f "$1" && -f "$2" && "$(fstamp "$1")" == "$(fstamp "$2")" ]] || {
         ( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
     }
 }
