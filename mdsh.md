@@ -80,12 +80,13 @@ mdsh-parse() {
 
 #### mdsh-source
 
-`mdsh-source` compiles text from standard input, or from the file specified by `$1` (if given).  It runs in the current shell, so the input is treated as if it were contained in the same file as is currently being compiled (if any.)
+`mdsh-source` compiles text from standard input, or from the file specified by `$1` (if given).  It runs in the current shell, so the input is treated as if it were contained in the same file as is currently being compiled (if any.)  `MDSH_SOURCE` is set to `$1` (unless it's `-` or empty).
 
 ```shell
 mdsh-source() {
-	local MDSH_FOOTER=
+	local MDSH_FOOTER= MDSH_SOURCE
 	if [[ ${1:--} != '-' ]]; then
+		MDSH_SOURCE="$1"
 		mdsh-parse __COMPILE__ <"$1"
 	else mdsh-parse __COMPILE__
 	fi
@@ -219,13 +220,13 @@ function mdsh-interpret() {
 
 ### --compile (-c)
 
-Compile one or more files, appending the results to stdout.  `mdsh` blocks in each file will see an `$MDSH_SOURCE` that points to their filename (which may just be a `-`).
+Compile one or more files, appending the results to stdout.  `mdsh` blocks in each file will see an `$MDSH_SOURCE` that points to their filename (unless it's a `-`).
 
 ```shell
 mdsh.--compile() {
 	(($#)) || mdsh-error "Usage: %s --compile FILENAME..." "${0##*/}"
 	! fn-exists mdsh:file-header || mdsh:file-header
-	for REPLY; do MDSH_SOURCE=$REPLY mdsh-compile "$REPLY"; done
+	for REPLY; do mdsh-compile "$REPLY"; done
 	! fn-exists mdsh:file-footer || mdsh:file-footer
 }
 
