@@ -394,8 +394,8 @@ mdsh-cache() {
 }
 
 flatname() {
-	REPLY="${1//"%"/"%25"}"; REPLY="${REPLY//"/"/"%2F"}"; REPLY="${REPLY/#./"%2E"}"
-	REPLY="${REPLY//'\'/%5C}"
+	REPLY="${1//\%/%25}"; REPLY="${REPLY//\//%2F}"; REPLY="${REPLY/#./%2E}"
+	REPLY="${REPLY//\\/%5C}"
 }
 ```
 
