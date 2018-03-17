@@ -391,7 +391,7 @@ Using cache directory `$1`, and cache key `$3` to generate a filename, run `mdsh
 ```shell
 mdsh-cache() {
 	[[ -d "$1" ]] || mkdir -p "$1"
-	flatname "${3:-$2}"; mdsh-make "$2" "$1/$REPLY" "${@:4}"
+	flatname "${3:-$2}"; REPLY="$1/$REPLY"; mdsh-make "$2" "$REPLY" "${@:4}"
 }
 
 flatname() {

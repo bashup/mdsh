@@ -14,6 +14,7 @@ Our fixture and helper:
 Nominal Success cases:
 
 
+````sh
     $ mdsh --compile t1.md
     echo yep
     $ mdsh -c t1.md
@@ -33,6 +34,7 @@ Nominal Success cases:
     yep
     $ mdsh -- t1.md
     yep
+````
 
 Pipes:
 
@@ -126,6 +128,7 @@ Languages with a runtime function get embedded, and mdsh blocks are executed sil
 
 unless you use mdsh-source, instead:
 
+````sh
     $ mdsh-source <<'EOF'
     > ```mdsh
     > mdsh-lang-python() { python; }
@@ -142,7 +145,7 @@ unless you use mdsh-source, instead:
 
     $ type -t mdsh-lang-python || echo [$?]
     function
-
+````
 
 You can define mdsh-compile-X functions to generate code directly:
 
@@ -384,12 +387,18 @@ Automatic cache dir creation, name flattening, and make:
     $ cd ..
     $ mdsh-cache my-cache t1.md "" echo building
     building
+    $ echo "$REPLY"
+    my-cache/t1.md
+
     $ ls my-cache
     t1.md
     $ cat my-cache/t1.md
     echo yep
+
     $ mdsh-cache my-cache t1.md ./t/../t1.md echo again
     again
+    $ echo "$REPLY"
+    my-cache/%2E%2Ft%2F..%2Ft1.md
     $ ls my-cache
     %2E%2Ft%2F..%2Ft1.md
     t1.md
