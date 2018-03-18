@@ -4,15 +4,16 @@
 
 Our fixture and helper:
 
+````sh
     $ mdsh() { $TESTDIR/../mdsh.md "$@"; }
     $ cat >t1.md <<'EOF'
     > ```shell
     > echo yep
     > ```
     > EOF
+````
 
 Nominal Success cases:
-
 
 ````sh
     $ mdsh --compile t1.md
@@ -38,7 +39,7 @@ Nominal Success cases:
 
 Pipes:
 
-
+````sh
     $ cat t1.md | mdsh --compile -
     echo yep
     $ cat t1.md | mdsh --compile t1.md - t1.md
@@ -47,10 +48,11 @@ Pipes:
     echo yep
     $ cat t1.md | mdsh -
     yep
+````
 
 Errors:
 
-
+````sh
     $ mdsh
     Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
@@ -68,9 +70,11 @@ Errors:
     [64]
     $ mdsh -- --compile t1.md
     */mdsh.md: line *: --compile: No such file or directory (glob)
+````
 
 Help:
 
+````sh
     $ mdsh --help
     Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
     
@@ -83,6 +87,7 @@ Help:
       -E, --eval MDFILE         Compile one file w/a shelldown-support footer line
     
     $ 
+````
 
 ### Basics
 
@@ -161,6 +166,7 @@ You can define mdsh-compile-X functions to generate code directly:
 
 And if there's both a lang-X and compile-X function, lang takes precedence:
 
+````sh
     $ mdsh --compile - <<'EOF'
     > ```mdsh
     > mdsh-compile-python() { printf 'python -c %q\n' "$(cat)"; }
@@ -175,7 +181,7 @@ And if there's both a lang-X and compile-X function, lang takes precedence:
     } <<'```'
     print("hiya")
     (```) (re)
-
+````
 
 ### Unknown Language Blocks
 
@@ -200,13 +206,14 @@ And invalid characters for a variable name are replaced with `_`:
 
 But known languages are *not* added to a variable:
 
+````sh
     $ mdsh --compile - <<'EOF'
     > ```mdsh
     > echo hello world!
     > ```
     > EOF
     hello world!
-
+````
 
 ### Bad Tags
 
@@ -237,6 +244,7 @@ But not if they have no language at all:
 
 Or are contained in a `~~~` block:
 
+````sh
     $ mdsh --compile - <<'EOF'
     > ~~~xyz
     > ```this is a weird $one!
@@ -244,7 +252,7 @@ Or are contained in a `~~~` block:
     > ```
     > ~~~
     > EOF
-
+````
 
 ### Edge Cases
 
@@ -276,13 +284,14 @@ You can define handlers for empty languages, too:
 
 And `shell mdsh` blocks are treated the same as plain `mdsh` blocks:
 
+````sh
     $ mdsh --compile - <<'EOF'
     > ```shell mdsh
     > echo "Hello from mdsh!"
     > ```
     > EOF
     Hello from mdsh!
-
+````
 
 ### Running Compiled Code
 
