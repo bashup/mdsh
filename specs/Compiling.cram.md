@@ -406,3 +406,21 @@ Automatic cache dir creation, name flattening, and make:
     echo yep
     $ mdsh-cache my-cache t1.md ./t/../t1.md echo again
 ~~~
+
+### run-markdown
+
+````sh
+# Source
+    $ run-markdown t1.md
+    yep
+
+    $ cat >t2.md <<'EOF'
+    > ```shell
+    > printf '%q\n' "$@"
+    > ```
+    > EOF
+    $ run-markdown t2.md x y z
+    x
+    y
+    z
+````

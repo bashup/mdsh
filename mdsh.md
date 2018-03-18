@@ -406,7 +406,12 @@ flatname() {
 ```shell
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
-run-markdown() { source <(mdsh-source "${1--}") "${@:2}"; }
+run-markdown() {
+	if [[ $BASH_VERSINFO == 3 ]]; then # bash 3 can't source from proc
+		source /dev/fd/0 "${@:2}" <<<"$(mdsh-source "${1--}")"
+	else source <(mdsh-source "${1--}") "${@:2}"
+	fi
+}
 ```
 
 ## Startup
