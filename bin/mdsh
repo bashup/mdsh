@@ -167,7 +167,7 @@ MDSH_MODULE=
 }
 @main() {
 	! [[ $MDSH_MODULE ]] || return 0
-	MDSH_FOOTER=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
+	MDSH_FOOTER=$'if [[ $0 == "${BASH_SOURCE-}" ]]; then '"$1"$' "$@"; fi\n'
 }
 @comment() (  # subshell for cd
 	! [[ "${MDSH_SOURCE-}" == */* ]] || cd "${MDSH_SOURCE%/*}"

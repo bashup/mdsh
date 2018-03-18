@@ -113,6 +113,6 @@ The result is different depending on whether it's done as a module or not:
     # This line is always here
     # And so is this
     # more code
-    if [[ $0 == "$BASH_SOURCE" ]]; then foo "$@"; fi
+    if [[ $0 == "${BASH_SOURCE-}" ]]; then foo "$@"; fi
 ~~~
 

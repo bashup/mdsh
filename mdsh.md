@@ -329,7 +329,7 @@ Output code to run `$1` as the main function, if building a top-level module.
 ```shell
 @main() {
 	! [[ $MDSH_MODULE ]] || return 0
-	MDSH_FOOTER=$'if [[ $0 == "$BASH_SOURCE" ]]; then '"$1"$' "$@"; fi\n'
+	MDSH_FOOTER=$'if [[ $0 == "${BASH_SOURCE-}" ]]; then '"$1"$' "$@"; fi\n'
 }
 ```
 
