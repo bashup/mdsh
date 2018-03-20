@@ -1,2 +1,2 @@
-[{*.md,bin/*}]
+[{mdsh.md,bin/mdsh}]
 indent_size = 4
