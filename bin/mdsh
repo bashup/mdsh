@@ -214,4 +214,4 @@ run-markdown() {
 	else source <(mdsh-source "${1--}") "${@:2}"
 	fi
 }
-if [[ $0 == "$BASH_SOURCE" ]]; then mdsh-main "$@"; fi
+if [[ $0 == "${BASH_SOURCE-}" ]]; then mdsh-main "$@"; fi
