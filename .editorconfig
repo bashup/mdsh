@@ -1,2 +1,4 @@
 [{mdsh.md,bin/mdsh}]
 indent_size = 4
+tab_width = 4
+
