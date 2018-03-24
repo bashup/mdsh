@@ -16,6 +16,5 @@ dk use: bash32                # enable doing tests/console/etc. in bash3.2 w/doc
 
 dk.build() {
     dk test || abort "tests failed; not building" $?
-    require realpaths basher install bashup/realpaths
     bin/mdsh --out bin/mdsh --compile mdsh.md
 }
