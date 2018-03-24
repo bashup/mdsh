@@ -122,7 +122,7 @@ To automate the handling of non-`shell` language blocks, you can define one or m
 These build rules are specified by defining specially-named bash functions.  Unlike functions in `shell` blocks, these functions are *not* part of your script and therefore can't be called directly.  Instead, `mdsh` itself invokes them (or copies out their source code), whenever subsequent blocks match the functions' names:
 
 * An `mdsh-lang-X` function is a template for code to be run when a block of language `X` is encountered.  Its function body is copied to the translated script as a bash compound statment (i.e. in curly braces`{...}`) , that will execute with the block contents as a heredoc on its standard input.  (Its standard output is the same as the overall script's.)
-* An `mdsh-compile-X` function is invoked *at compile time* with the block contents as `$1`, and must output a bash source code translation of the block on its stdout.
+* An `mdsh-compile-X` function is invoked *at compile time* with the block contents as `$1`, and must output a bash source code translation of the block on its stdout.  (The block's full original language tag is in `$2`, and the code block's starting line number is in `$3`.  If the source being compiled is a file, `$MDSH_SOURCE` is the source filename.)
 * If neither an `mdsh-lang-X` nor `mdsh-compile-X` function exists, `mdsh-misc` is invoked *at compile time* with the raw language tag as `$1` and the block contents as `$2`.  The output of `mdsh-misc` will be added to the compiled script.  (The default implementation of `mdsh-misc` outputs code to save the block contents in a variable, as described above in the [Data Blocks](#data-blocks) section, above.)
 * An `mdsh-after-X` function is a template for code to be run *after* a block of language `X` is encountered.  Its function body is copied to the translated script as a block just after the `mdsh-lang-X` body, `mdsh-compile-X` output, or `mdsh_raw_X+=(contents)` statement.  It does *not* receive the block source, so its standard input and output are those of the script itself.
 
@@ -179,14 +179,14 @@ Sometimes you have only one block that needs to be processed in a particular way
 A command block is a code block whose language tag's *second word* begins with a `|` or `!`:
 
 * If it's a `|`, the remainder of the language tag is executed at **run** time with the block's contents on standard input (just like an `mdsh-lang-X` function body)
-* If it's a `!`, the remainder of the language tag is executed at **compile** time with the block's contents in `$1`, and must output compiled code to standard output (just like an `mdsh-compile-X` function).
+* If it's a `!`, the remainder of the language tag is executed at **compile** time with the block's contents in `$1`, and must output compiled code to standard output (just like an `mdsh-compile-X` function).  (The full language tag is in `$2`, and the code block's starting line number is in `$3`.  If the source being compiled is a file, `$MDSH_SOURCE` is the source filename.)
 
 (In either case, the word *before* the `|` or `!` is ignored and discarded: it's assumed to be just a syntax highlighting hint.)
 
 Command blocks override normal language function lookups, so no  `mdsh-after-X` , `mdsh-lang-X`, or `mdsh-compile-X` functions are looked up or executed for command blocks.  Thus, this code as input to mdsh:
 
 ~~~markdown
-​```json !printf "echo %q\n" "def example: $1;"
+​```json !printf "echo %q\n" "# line $3:"  "def example: $1;"
 {"foo": "bar"}
 ​```
 
@@ -198,6 +198,7 @@ print("hello world!")
 would compile to the following output:
 
 ```bash
+echo \#line\ 41:
 echo $'def example: {"foo": "bar"}\n;'
 python <<<'```'
 print("hello world!")

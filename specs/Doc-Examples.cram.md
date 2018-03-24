@@ -17,11 +17,11 @@ And then we run the result with mdsh:
     
     // hey
     
+    # line 41:
     def example: {"foo": "bar"}
     ;
     hello world!
     Most tools will highlight this block as shell script
-
 
 (Notice that the output for each data block includes the line feed that terminated it.)
 

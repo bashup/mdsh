@@ -59,13 +59,13 @@ The `$fence` and `$indent` variables can be inspected to tell what the block's o
 
 ```shell
 mdsh-parse() {
-	local cmd=$1 lang block ln indent fence close_fence indent_remove
+	local cmd=$1 lno=0 block_start lang block ln indent fence close_fence indent_remove
 	local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
-	while IFS= read -r ln; do
+	while let lno++; IFS= read -r ln; do
 		if [[ $ln =~ $open_fence ]]; then
 			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
-			close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
-			while IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
+			block_start=$lno close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
+			while let lno++; IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
 				! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
 			done
 			lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
@@ -116,13 +116,13 @@ __COMPILE__() {
 	local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
 	local tag_words=($2);  # check for command blocks first
 	if [[ ${tag_words[1]-} == '!'* ]]; then
-		set -- "$3" "$2"; eval "${2#*!}"; return
+		set -- "$3" "$2" "$block_start"; eval "${2#*!}"; return
 	elif [[ ${tag_words[1]-} == '|'* ]]; then
 		echo "${2#*|} <<'\`\`\`'"; printf '%s```\n' "$3"; return
 	elif fn-exists mdsh-lang-$lang; then
 		mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; printf '%s```\n' "$3"
 	elif fn-exists mdsh-compile-$lang; then
-		mdsh-compile-$lang "$3"
+		mdsh-compile-$lang "$3" "$2" "$block_start"
 	else
 		mdsh-misc "$2" "$3"
 	fi
