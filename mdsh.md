@@ -7,7 +7,7 @@
 
 ```shell mdsh main
 @module mdsh.md
-@import pjeby/license @comment LICENSE
+@require pjeby/license @comment LICENSE
 ```
 
 And it expects to run in "bash strict mode":
@@ -39,7 +39,7 @@ set -euo pipefail  # Strict mode
   * [Usage Errors](#usage-errors)
   * [Help (-h and --help)](#help--h-and---help)
 - [Modules](#modules)
-  * [@import](#import)
+  * [@require](#require)
   * [@module](#module)
   * [@main](#main)
   * [@comment](#comment)
@@ -290,15 +290,16 @@ mdsh.-h() { mdsh.--help "$@"; }
 
 ## Modules
 
-### @import
+### @require
 
-`@import` *module cmd [args...]* will run *cmd args...* if it is the first call to `@import` for the named *module*.  The *cmd* should usually be `mdsh-source` or `mdsh-embed`, to include markdown modules or shell script modules, respectively, but it can be any command or function.  During execution of *cmd*, `MDSH_MODULE` will be set to *modulename*, allowing the running code to know it's being used as a module, potentially compiling itself differently.  (Normally, `MDSH_MODULE` is empty.)
+`@require` *module cmd [args...]* will run *cmd args...* if it is the first call to `@require` for the named *module*.  The *cmd* should usually be `mdsh-source` or `mdsh-embed`, to include markdown modules or shell script modules, respectively, but it can be any command or function.  During execution of *cmd*, `MDSH_MODULE` will be set to *modulename*, allowing the running code to know it's being used as a module, potentially compiling itself differently.  (Normally, `MDSH_MODULE` is empty.)
 
 ```shell
 MDSH_LOADED_MODULES=
 MDSH_MODULE=
 
-@import() {
+@import() { @require "$@"; }
+@require() {
 	if ! [[ $MDSH_LOADED_MODULES == *"<$1>"* ]]; then
 		MDSH_LOADED_MODULES+="<$1>"; local MDSH_MODULE=$1
 		"${@:2}"

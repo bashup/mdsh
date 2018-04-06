@@ -1,15 +1,15 @@
 ## Modules
 
-### @import
+### @require
 
-The `@import` function should run its arguments on first use, but not subsequent uses with the same module name:
+The `@require` function should run its arguments on first use, but not subsequent uses with the same module name:
 
 ~~~shell
     $ source "$TESTDIR/../mdsh.md"; set +e
-    $ @import foo echo "first!"
+    $ @require foo echo "first!"
     first!
-    $ @import foo echo "first!"
-    $ @import bar echo "second"
+    $ @require foo echo "first!"
+    $ @require bar echo "second"
     second
 ~~~
 
@@ -17,14 +17,14 @@ While executing, the command should see a local value of `MDSH_MODULE` equal to 
 
 ~~~shell
     $ load() { echo "$MDSH_MODULE"; }
-    $ @import baz load
+    $ @require baz load
     baz
 ~~~
 
 This value should *not* be exported to other processes:
 
 ~~~shell
-    $ @import spam bash -c 'echo ${MDSH_MODULE-safe!}'
+    $ @require spam bash -c 'echo ${MDSH_MODULE-safe!}'
     safe!
 ~~~
 
@@ -52,7 +52,7 @@ echo "# This footer is only in the main program"
 The result is different depending on whether it's done as a module or not:
 
 ~~~shell
-    $ @import zebra mdsh-source "$TESTDIR/$TESTFILE"
+    $ @require zebra mdsh-source "$TESTDIR/$TESTFILE"
     # This line is always here
     # And so is this
 
@@ -98,13 +98,13 @@ The result is different depending on whether it's done as a module or not:
 `@main` *funcname* adds code to the **end** of the currently-compiling file that will execute *funcname*, if and only if the executing file is the top-level bash script (i.e., not being sourced):
 
 ~~~shell
-    $ MDSH_MODULE=x @main fizz   # no-op during @import
+    $ MDSH_MODULE=x @main fizz   # no-op during @require
 
     $ mdsh-source <<'EOF'
     > ```mdsh
     > echo "# code"
     > @main bar
-    > @import whee mdsh-source "$TESTDIR/$TESTFILE"
+    > @require whee mdsh-source "$TESTDIR/$TESTFILE"
     > @main foo   # only the last call to @main counts
     > echo "# more code"
     > ```
