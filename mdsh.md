@@ -297,7 +297,6 @@ mdsh.-h() { mdsh.--help "$@"; }
 MDSH_LOADED_MODULES=
 MDSH_MODULE=
 
-@import() { @require "$@"; }
 @require() {
 	if ! [[ $MDSH_LOADED_MODULES == *"<$1>"* ]]; then
 		MDSH_LOADED_MODULES+="<$1>"; local MDSH_MODULE=$1
