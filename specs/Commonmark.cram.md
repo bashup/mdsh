@@ -3,7 +3,7 @@
 `mdsh`'s parser follows the [Commonmark fenced code blocks](http://spec.commonmark.org/0.28/#fenced-code-blocks) specification; we test this by invoking it with a dummy "compiler" that outputs information about the blocks the parser encounters:
 
 ```shell
-    $ source "$TESTDIR/../mdsh.md"; set +e
+    $ source "$BASHER_INSTALL_BIN/mdsh"; set +e
     $ dummy() {
     >     printf "indent='%s' fence='%s' info='%s'\n%s" "$indent" "$fence" "$2" "$3";
     > }

@@ -14,7 +14,14 @@ dk use: bash32                # enable doing tests/console/etc. in bash3.2 w/doc
 
 # Define overrides, new commands, functions, etc. here:
 
-dk.build() {
-    dk test || abort "tests failed; not building" $?
-    bin/mdsh --out bin/mdsh --compile mdsh.md
+compile-to() {
+    bin/mdsh --out "$1" --compile "$LOCO_ROOT/mdsh.md"
+    chmod +x "$1"
 }
+
+# Pre-build a copy of mdsh for tests
+before test  compile-to "$BASHER_INSTALL_BIN"/mdsh
+
+# Build the distribution version
+before build dk test
+on     build compile-to bin/mdsh

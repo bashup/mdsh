@@ -1,12 +1,11 @@
-#!/usr/bin/env bash
-: '
-<!-- ex: set ft=markdown : '; eval "$(sed -ne '/^```shell$/,/^```$/{/^```/d; p;}' "$BASH_SOURCE")"; eval "$(@main mdsh-main; echo $MDSH_FOOTER; unset MDSH_FOOTER; mdsh-main -E /dev/null)"; # -->
 # mdsh: a self-hosted Markdown-to-Shell Compiler
 
 ``mdsh`` is a compiler and interpreter for literate programs written in markdown and bash, that is itself written as a literate program in markdown and bash.  In the compiled distribution, it contains a LICENSE header (see [LICENSE](LICENSE) file for the terms that apply to this source file as well as the compiled version):
 
-```shell mdsh main
+```shell mdsh
 @module mdsh.md
+@main mdsh-main
+
 @require pjeby/license @comment LICENSE
 ```
 
@@ -415,8 +414,3 @@ run-markdown() {
 }
 ```
 
-## Startup
-
-```shell mdsh
-@main mdsh-main
-```

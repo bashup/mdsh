@@ -4,7 +4,7 @@ The `mdsh-embed` function embeds a sourced bash file at the current point in the
 
 The module must exist, of course:
 
-    $ source "$TESTDIR/../mdsh.md"; set +e
+    $ source "$BASHER_INSTALL_BIN/mdsh"; set +e
     $ mdsh-embed ./f1
     Can't find module ./f1
     [69]

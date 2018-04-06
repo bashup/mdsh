@@ -4,7 +4,7 @@ It should be possible to extend mdsh by sourcing it:
 
     $ cat >foosh <<'EOF'
     > #!/usr/bin/env bash
-    > source $TESTDIR/../mdsh.md
+    > source "$BASHER_INSTALL_BIN/mdsh"
     > mdsh:file-header() { echo 'echo "# header"'; }
     > mdsh:file-footer() { echo 'echo "# footer"'; }
     > if [[ $0 == $BASH_SOURCE ]]; then mdsh-main "$@"; fi
@@ -42,4 +42,3 @@ But *before* the eval footer:
     echo t1.md
     echo "# footer"
     __status=$? eval 'return $__status || exit $__status' 2>/dev/null
-

@@ -5,7 +5,7 @@
 The `@require` function should run its arguments on first use, but not subsequent uses with the same module name:
 
 ~~~shell
-    $ source "$TESTDIR/../mdsh.md"; set +e
+    $ source "$BASHER_INSTALL_BIN/mdsh"; set +e
     $ @require foo echo "first!"
     first!
     $ @require foo echo "first!"

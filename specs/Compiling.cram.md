@@ -5,7 +5,7 @@
 Our fixture and helper:
 
 ````sh
-    $ mdsh() { $TESTDIR/../mdsh.md "$@"; }
+    $ mdsh() { "$BASHER_INSTALL_BIN/mdsh" "$@"; }
     $ cat >t1.md <<'EOF'
     > ```shell
     > echo yep
@@ -54,29 +54,29 @@ Errors:
 
 ````sh
     $ mdsh
-    Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
     $ mdsh --compile
-    Usage: mdsh.md --compile FILENAME...
+    Usage: mdsh --compile FILENAME...
     [64]
     $ mdsh --eval
-    Usage: mdsh.md --eval FILENAME
+    Usage: mdsh --eval FILENAME
     [64]
     $ mdsh --eval - </dev/null
-    Usage: mdsh.md --eval FILENAME
+    Usage: mdsh --eval FILENAME
     [64]
     $ mdsh --compiler
-    mdsh.md: unrecognized option: --compiler
+    mdsh: unrecognized option: --compiler
     [64]
     $ mdsh -- --compile t1.md
-    */mdsh.md: line *: --compile: No such file or directory (glob)
+    */mdsh: line *: --compile: No such file or directory (glob)
 ````
 
 Help:
 
 ````sh
     $ mdsh --help
-    Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
     
     Run and/or compile code blocks from markdownfile(s) to bash.
     Use a filename of `-` to run or compile from stdin.
@@ -111,7 +111,7 @@ Unrecognized languages append to a variable:
 
 Languages with a runtime function get embedded, and mdsh blocks are executed silently:
 
-    $ source $TESTDIR/../mdsh.md   # test `mdsh-compile` directly to check subshell functionality
+    $ source "$BASHER_INSTALL_BIN/mdsh"   # test `mdsh-compile` directly to check subshell functionality
     $ mdsh-compile <<'EOF'
     > ```mdsh
     > mdsh-lang-python() { python; }
@@ -331,7 +331,7 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     fail
 
     $ mdsh -o x || echo [$?]
-    Usage: mdsh.md [--out FILE] [ --compile | --eval ] markdownfile [args...]
+    Usage: mdsh [--out FILE] [ --compile | --eval ] markdownfile [args...]
     [64]
 
     $ ls x || echo fail
@@ -368,7 +368,7 @@ Passing `--out *file*` as the first option overwrites that file with the compila
 ### Building an Output File with mdsh-make
 
 ```shell
-    $ source $TESTDIR/../mdsh.md; set +e
+    $ set +e
     $ mkdir t; cd t
     $ mdsh-make ../t1.md t1 echo building
     building
