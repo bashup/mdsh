@@ -13,20 +13,32 @@ The `@require` function should run its arguments on first use, but not subsequen
     second
 ~~~
 
-While executing, the command should see a local value of `MDSH_MODULE` equal to the module name:
+While executing, `@is-main` should return false, and the command should see a local value of `MDSH_MODULE` equal to the module name:
 
 ~~~shell
-    $ load() { echo "$MDSH_MODULE"; }
+    $ load() { @is-main || echo "not main"; echo "$MDSH_MODULE"; }
     $ @require baz load
+    not main
     baz
 ~~~
 
-This value should *not* be exported to other processes:
+This value should *not* be exported to other processes, and `@is-main` should normally return truth:
 
 ~~~shell
     $ @require spam bash -c 'echo ${MDSH_MODULE-safe!}'
     safe!
+    $ @is-main && echo "is main"
+    is main
 ~~~
+
+Also, even though `@require` uses `<>` internally to delimit the list of loaded modules, it should not be possible to corrupt this list by using those characters inside a module name:
+
+````sh
+    $ @require '<thing1><thing2>' echo trying corruption
+    trying corruption
+    $ @require 'thing1' echo "didn't work!"
+    didn't work!
+````
 
 ### "Main" Blocks
 

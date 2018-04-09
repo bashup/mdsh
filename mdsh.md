@@ -159,10 +159,10 @@ mdsh-misc()          { mdsh-data "$@"; }    # Treat unknown languages as data
 mdsh-compile-()      { :; }                 # Ignore language-less blocks
 
 mdsh-compile-mdsh()  { eval "$1"; }         # Execute `mdsh` blocks in-line
-mdsh-compile-mdsh_main() { [[ $MDSH_MODULE ]] || eval "$1"; }
+mdsh-compile-mdsh_main() { ! @is-main || eval "$1"; }
 
 mdsh-compile-shell() { printf '%s' "$1"; }  # Copy `shell` blocks to the output
-mdsh-compile-shell_main() { [[ $MDSH_MODULE ]] || printf '%s' "$1"; }
+mdsh-compile-shell_main() { ! @is-main || printf '%s' "$1"; }
 ```
 
 Data blocks are processed by emitting code to add the block contents to an `mdsh_raw_X` variable:
@@ -298,11 +298,20 @@ MDSH_LOADED_MODULES=
 MDSH_MODULE=
 
 @require() {
-	if ! [[ $MDSH_LOADED_MODULES == *"<$1>"* ]]; then
-		MDSH_LOADED_MODULES+="<$1>"; local MDSH_MODULE=$1
+	flatname "$1"
+	if ! [[ $MDSH_LOADED_MODULES == *"<$REPLY>"* ]]; then
+		MDSH_LOADED_MODULES+="<$REPLY>"; local MDSH_MODULE=$1
 		"${@:2}"
 	fi
 }
+```
+
+### @is-main
+
+`@is-main` returns truth if the code being built is a program's "main" module, and false if there is a currently-executing `@require`.
+
+```shell
+@is-main() { ! [[ $MDSH_MODULE ]]; }
 ```
 
 ### @module
@@ -311,7 +320,7 @@ Output a shebang header and an "automatically-generated from" notice, if buildin
 
 ```shell
 @module() {
-	! [[ $MDSH_MODULE ]] || return 0
+	@is-main || return 0
 	set -- "${1:-${MDSH_SOURCE-}}"
 	echo "#!/usr/bin/env bash"
 	echo "# ---"
@@ -327,7 +336,7 @@ Output code to run `$1` as the main function, if building a top-level module.
 
 ```shell
 @main() {
-	! [[ $MDSH_MODULE ]] || return 0
+	@is-main || return 0
 	MDSH_FOOTER=$'if [[ $0 == "${BASH_SOURCE-}" ]]; then '"$1"$' "$@"; fi\n'
 }
 ```
@@ -392,9 +401,16 @@ mdsh-cache() {
 	[[ -d "$1" ]] || mkdir -p "$1"
 	flatname "${3:-$2}"; REPLY="$1/$REPLY"; mdsh-make "$2" "$REPLY" "${@:4}"
 }
+```
 
+### flatname
+
+Escape `$1` to use as a "flat" filename with no `/`, `<`, or `>` characters and no leading `.`, returning it in `$REPLY`.
+
+```shell
 flatname() {
 	REPLY="${1//\%/%25}"; REPLY="${REPLY//\//%2F}"; REPLY="${REPLY/#./%2E}"
+	REPLY="${REPLY//</%3C}"; REPLY="${REPLY//>/%3E}"
 	REPLY="${REPLY//\\/%5C}"
 }
 ```
