@@ -416,7 +416,7 @@ Automatic cache dir creation, name flattening, and make:
     $ mdsh-cache my-cache t1.md ./t/../t1.md echo again
 ~~~
 
-### run-markdown
+### run-markdown and mdsh-run
 
 ````sh
 # Source
@@ -432,4 +432,51 @@ Automatic cache dir creation, name flattening, and make:
     x
     y
     z
+
+# mdsh-run caches in $MDSH_CACHE with key $2
+
+    $ MDSH_CACHE=cache2 mdsh-run t2.md MYKEY a b c
+    a
+    b
+    c
+
+    $ ls cache2
+    MYKEY
+
+    $ cat cache2/MYKEY
+    printf '%q\n' "$@"
+
+# mdsh-use-cache sets MDSH_CACHE
+
+    $ mdsh-use-cache cache3
+    $ mdsh-run t2.md "" x
+    x
+
+    $ ls cache3
+    t2.md
+
+    $ declare -p MDSH_CACHE
+    declare -- MDSH_CACHE="cache3"
+
+# mdsh-use-cache w/no-args sets to {XDG_CACHE_HOME|HOME/.cache}/mdsh
+
+    $ XDG_CACHE_HOME=/my/cache HOME=/home/me mdsh-use-cache
+    $ declare -p MDSH_CACHE
+    declare -- MDSH_CACHE="/my/cache/mdsh"
+
+    $ XDG_CACHE_HOME= HOME=/home/me mdsh-use-cache
+    $ set +x; declare -p MDSH_CACHE
+    declare -- MDSH_CACHE="/home/me/.cache/mdsh"
+
+    $ XDG_CACHE_HOME= HOME= mdsh-use-cache
+    $ declare -p MDSH_CACHE
+    declare -- MDSH_CACHE=""
+
+
+# or runs run-markdown if cache disabled
+
+    $ run-markdown() { echo "run-markdown" "$@"; }
+
+    $ MDSH_CACHE= mdsh-run t2.md "" q
+    run-markdown t2.md q
 ````

@@ -396,7 +396,12 @@ eval "mdsh.--compile() $(mdsh-rewrite mdsh.--compile '{ jqmd-header;' 'jqmd-foot
 
 The following functions are available for your use or alteration in scripts sourcing `mdsh`:
 
-* `run-markdown` *mdfile args...* -- execute the specified markdown file with *args* as its positional arguments (`$1`,  `$2`, etc.)  Use this instead of `mdsh-main` if you just want to interepret some markdown and maybe pass it some arguments: it's really just shorthand for `source <(mdsh-compile mdfile) args...`.
+* `mdsh-run` *mdfile [cache-key [args...]]* -- `source` the compiled version of the specified markdown file with *args* as its positional arguments (`$1`,  `$2`, etc.).  The directory in `$MDSH_CACHE` (if any) is used to cache the compiled version in a file whose name is generated using *cache-key*.  If *cache-key* is missing or empty, *mdfile* is used as the cache key.
+
+  To set a specific cache directory or disable caching, set it using `MDSH_CACHE=` on the same line as `mdsh-run`, e.g. `MDSH_CACHE= mdsh-run somefile` to run `somefile` without caching.  Sourcing or running `mdsh` sets the default `MDSH_CACHE` to `$XDG_CACHE_HOME/mdsh` or `$HOME/.cache/mdsh`, as appropriate for your OS.
+
+* `mdsh-use-cache` *[cachedir]* -- sets `MDSH_CACHE` to *cachedir*.  If no arguments are given, `MDSH_CACHE` is reset to the default of  `$XDG_CACHE_HOME/mdsh` or `$HOME/.cache/mdsh`, as appropriate.
+* `run-markdown` *mdfile args...* -- `source` the compiled version of *mdfile* with *args* as its positional arguments (`$1`,  `$2`, etc.), without using a cache.
 * `mdsh-error` *format args...* --`printf` *format args* to stderr and terminate the process with errorlevel 64 ([EX_USAGE](https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3#DESCRIPTION)) .  (A linefeed is added to the format string automatically.)
 * `mdsh-compile` -- accepts markdown on stdin and outputs bash code on stdout.  The compilation takes place in a subshell, so hook functions defined in the code being compiled do **not** affect the caller's environment.  Hook functions *already* defined in the caller's environment, however, will be used to translate blocks of the relevant languages.
 * `mdsh-source` -- like `mdsh-compile`, but not run in subshell, so any hook functions or compile-time variable changes will affect the caller, as if the included source were part of the including document.

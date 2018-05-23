@@ -39,14 +39,18 @@ set -euo pipefail  # Strict mode
   * [Help (-h and --help)](#help--h-and---help)
 - [Modules](#modules)
   * [@require](#require)
+  * [@is-main](#is-main)
   * [@module](#module)
   * [@main](#main)
   * [@comment](#comment)
 - [Utility Functions](#utility-functions)
   * [mdsh-embed](#mdsh-embed)
   * [mdsh-make](#mdsh-make)
-  * [run-markdown](#run-markdown)
-- [Startup](#startup)
+  * [mdsh-cache](#mdsh-cache)
+    + [flatname](#flatname)
+  * [mdsh-use-cache](#mdsh-use-cache)
+  * [mdsh-run](#mdsh-run)
+    + [run-markdown](#run-markdown)
 
 <!-- tocstop -->
 
@@ -403,7 +407,7 @@ mdsh-cache() {
 }
 ```
 
-### flatname
+#### flatname
 
 Escape `$1` to use as a "flat" filename with no `/`, `<`, or `>` characters and no leading `.`, returning it in `$REPLY`.
 
@@ -415,8 +419,37 @@ flatname() {
 }
 ```
 
+### mdsh-use-cache
 
-### run-markdown
+Set the cache directory in `MDSH_CACHE` (to be used by `mdsh-run`).  Defaults to `$XDG_CACHE_HOME/mdsh` or `$HOME/.cache/mdsh` if no arguments are supplied.  Pass an empty string to disable caching.
+
+```shell
+MDSH_CACHE=
+mdsh-use-cache() {
+	if !(($#)); then
+		set -- "${XDG_CACHE_HOME:-${HOME:+$HOME/.cache}}"
+		set -- "${1:+$1/mdsh}"
+	fi
+	MDSH_CACHE="$1"
+}
+mdsh-use-cache
+```
+
+### mdsh-run
+
+Run/source the markdown file in `$1`, using the cache directory in `$MDSH_CACHE` and the cache key in `$2`.  Any additional arguments are passed positionally to the file.  If `$MDSH_CACHE` is missing or empty, the file is compiled and executed on the fly rather than built/saved in cache.
+
+```shell
+mdsh-run() {
+	if [[ ${MDSH_CACHE-} ]]; then
+		mdsh-cache "$MDSH_CACHE" "$1" "${2-}"
+		source "$REPLY" "${@:3}"
+	else run-markdown "$1" "${@:3}"
+	fi
+}
+```
+
+#### run-markdown
 
 ```shell
 # run-markdown file args...

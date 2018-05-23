@@ -208,6 +208,22 @@ flatname() {
 	REPLY="${REPLY//</%3C}"; REPLY="${REPLY//>/%3E}"
 	REPLY="${REPLY//\\/%5C}"
 }
+MDSH_CACHE=
+mdsh-use-cache() {
+	if !(($#)); then
+		set -- "${XDG_CACHE_HOME:-${HOME:+$HOME/.cache}}"
+		set -- "${1:+$1/mdsh}"
+	fi
+	MDSH_CACHE="$1"
+}
+mdsh-use-cache
+mdsh-run() {
+	if [[ ${MDSH_CACHE-} ]]; then
+		mdsh-cache "$MDSH_CACHE" "$1" "${2-}"
+		source "$REPLY" "${@:3}"
+	else run-markdown "$1" "${@:3}"
+	fi
+}
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() {
