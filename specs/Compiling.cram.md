@@ -374,17 +374,18 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     building
     $ cat t1
     echo yep
-    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
+    $ same-time() { [[ ! "$1" -nt "$2" && ! "$1" -ot "$2" ]]; }
+    $ same-time ../t1.md t1; echo $?
     0
     $ mdsh-make ../t1.md t1 echo building
-    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
+    $ same-time ../t1.md t1; echo $?
     0
     $ touch -t 201101012310.45 ../t1.md
-    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
+    $ same-time ../t1.md t1; echo $?
     1
     $ mdsh-make ../t1.md t1 echo building
     building
-    $ [[ "$(fstamp ../t1.md)" == "$(fstamp t1)" ]]; echo $?
+    $ same-time ../t1.md t1; echo $?
     0
 ```
 
