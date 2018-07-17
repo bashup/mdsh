@@ -52,8 +52,10 @@ __COMPILE__() {
 	local tag_words=($2);  # check for command blocks first
 	if [[ ${tag_words[1]-} == '!'* ]]; then
 		set -- "$3" "$2" "$block_start"; eval "${2#*!}"; return
+	elif [[ ${tag_words[1]-} == '+'* ]]; then
+		printf "%s %q\n" "${2#"$tag_words"*+}" "$3"
 	elif [[ ${tag_words[1]-} == '|'* ]]; then
-		echo "${2#*|} <<'\`\`\`'"; printf '%s```\n' "$3"; return
+		echo "${2#"$tag_words"*|} <<'\`\`\`'"; printf '%s```\n' "$3"; return
 	elif fn-exists mdsh-lang-$lang; then
 		mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; printf '%s```\n' "$3"
 	elif fn-exists mdsh-compile-$lang; then

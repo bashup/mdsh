@@ -176,9 +176,10 @@ Notice too, by the way, that `compile` functions get access to the actual block 
 
 Sometimes you have only one block that needs to be processed in a particular way, or each block of a particular language needs unique arguments to compile or execute.  For these scenarios, you can define "command blocks".
 
-A command block is a code block whose language tag's *second word* begins with a `|` or `!`:
+A command block is a code block whose language tag's *second word* begins with a `|`, `+`, or `!`:
 
-* If it's a `|`, the remainder of the language tag is executed at **run** time with the block's contents on standard input (just like an `mdsh-lang-X` function body)
+* If it's a `|`, the remainder of the language tag is executed at runtime with the block's contents on standard input (just like an `mdsh-lang-X` function body)
+* If it's a `+`, the remainder of the language tag is executed at runtime with the block's contents as an extra command line argument
 * If it's a `!`, the remainder of the language tag is executed at **compile** time with the block's contents in `$1`, and must output compiled code to standard output (just like an `mdsh-compile-X` function).  (The full language tag is in `$2`, and the code block's starting line number is in `$3`.  If the source being compiled is a file, `$MDSH_SOURCE` is the source filename.)
 
 (In either case, the word *before* the `|` or `!` is ignored and discarded: it's assumed to be just a syntax highlighting hint.)
@@ -186,20 +187,25 @@ A command block is a code block whose language tag's *second word* begins with a
 Command blocks override normal language function lookups, so no  `mdsh-after-X` , `mdsh-lang-X`, or `mdsh-compile-X` functions are looked up or executed for command blocks.  Thus, this code as input to mdsh:
 
 ~~~markdown
-​```json !printf "echo %q\n" "# line $3:"  "def example: $1;"
+```json !printf "echo %q\n" "# line $3:"  "def example: $1;"
 {"foo": "bar"}
-​```
+```
 
-​```python |python
+```html +echo "The html is:"
+<html />
+```
+
+```python |python
 print("hello world!")
-​```
+```
 ~~~
 
-would compile to the following output:
+would compile to the following shell script:
 
 ```bash
 echo \#line\ 41:
 echo $'def example: {"foo": "bar"}\n;'
+echo "The html is:" $'<html />\n'
 python <<<'```'
 print("hello world!")
 ​```

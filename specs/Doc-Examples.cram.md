@@ -20,6 +20,8 @@ And then we run the result with mdsh:
     # line 41:
     def example: {"foo": "bar"}
     ;
+    The html is: <html />
+    
     hello world!
     Most tools will highlight this block as shell script
 
