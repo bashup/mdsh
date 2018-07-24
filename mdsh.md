@@ -63,15 +63,15 @@ The `$fence` and `$indent` variables can be inspected to tell what the block's o
 ```shell
 mdsh-parse() {
 	local cmd=$1 lno=0 block_start lang block ln indent fence close_fence indent_remove
-	local open_fence='^( {0,3})(~~~+|```+) *([^`]*)$'
-	while let lno++; IFS= read -r ln; do
+	local open_fence=$'^( {0,3})(~~~+|```+) *([^`]*)$'
+	while ((lno++)); IFS= read -r ln; do
 		if [[ $ln =~ $open_fence ]]; then
 			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
 			block_start=$lno close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
-			while let lno++; IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
-				! [[ $ln =~ $indent_remove ]] || ln=${ln#$BASH_REMATCH}; block+=$ln$'\n'
+			while ((lno++)); IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
+				! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; block+=$ln$'\n'
 			done
-			lang="${lang%"${lang##*[![:space:]]}"}"; $cmd fenced "$lang" "$block";
+			lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$block";
 		fi
 	done
 }
@@ -87,7 +87,7 @@ mdsh-parse() {
 
 ```shell
 mdsh-source() {
-	local MDSH_FOOTER= MDSH_SOURCE
+	local MDSH_FOOTER='' MDSH_SOURCE
 	if [[ ${1:--} != '-' ]]; then
 		MDSH_SOURCE="$1"
 		mdsh-parse __COMPILE__ <"$1"
@@ -115,30 +115,39 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
 
 ```shell
 __COMPILE__() {
-	[[ $1 == fenced && $fence == '```' && ! $indent ]] || return 0  # only unindented ``` code
+	[[ $1 == fenced && $fence == $'```' && ! $indent ]] || return 0  # only unindented ``` code
 	local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
-	local tag_words=($2);  # check for command blocks first
+	local tag_words; mdsh-splitwords "$2" tag_words;  # check for command blocks first
 	if [[ ${tag_words[1]-} == '!'* ]]; then
 		set -- "$3" "$2" "$block_start"; eval "${2#*!}"; return
 	elif [[ ${tag_words[1]-} == '+'* ]]; then
-		printf "%s %q\n" "${2#"$tag_words"*+}" "$3"
+		printf '%s %q\n' "${2#"${tag_words[0]}"*+}" "$3"
 	elif [[ ${tag_words[1]-} == '|'* ]]; then
-		echo "${2#"$tag_words"*|} <<'\`\`\`'"; printf '%s```\n' "$3"; return
-	elif fn-exists mdsh-lang-$lang; then
-		mdsh-rewrite mdsh-lang-$lang "{" "} <<'\`\`\`'"; printf '%s```\n' "$3"
-	elif fn-exists mdsh-compile-$lang; then
-		mdsh-compile-$lang "$3" "$2" "$block_start"
+		echo "${2#"${tag_words[0]}"*|} <<'\`\`\`'"; printf $'%s```\n' "$3"; return
+	elif fn-exists "mdsh-lang-$lang"; then
+		mdsh-rewrite "mdsh-lang-$lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$3"
+	elif fn-exists "mdsh-compile-$lang"; then
+		"mdsh-compile-$lang" "$3" "$2" "$block_start"
 	else
 		mdsh-misc "$2" "$3"
 	fi
 
-	if fn-exists mdsh-after-$lang; then
-		mdsh-rewrite mdsh-after-$lang
+	if fn-exists "mdsh-after-$lang"; then
+		mdsh-rewrite "mdsh-after-$lang"
 	fi
 }
 ```
 
-To do that, it needs to be able to detect what functions exist, and to extract their source code.
+To do that, it needs to be able to split words, detect what functions exist, and to extract their source code.
+
+#### mdsh-splitwords
+
+```shell
+# split words in $1 into the array named by $2 (REPLY by default), without wildcard expansion
+mdsh-splitwords() {
+	set -f -- "$-" "$@";  eval "${3:-REPLY}"'=($2)'; [[ $1 == *f* ]] || set +f
+}
+```
 
 #### fn-exists
 
@@ -152,7 +161,7 @@ fn-exists() { declare -F -- "$1"; } >/dev/null
 ```shell
 # Output body of func $1, optionally replacing the opening/closing { and } with $2 and $3
 mdsh-rewrite() {
-	declare -f $1 | sed -e '1d; 2s/^{ $/'"${2-"{"}"'/; $s/^}$/'"${3-"\}"}"'/'
+	local b='}' r; r="$(declare -f -- "$1")"; r=${r#*{ }; r=${r%\}*}; echo "${2-{}$r${3-$b}"
 }
 ```
 
@@ -175,7 +184,7 @@ Data blocks are processed by emitting code to add the block contents to an `mdsh
 
 ```shell
 mdsh-data() {
-	printf "mdsh_raw_${1//[^_[:alnum:]]/_}+=(%q)\n" "$2"
+	printf 'mdsh_raw_%s+=(%q)\n' "${1//[^_[:alnum:]]/_}" "$2"
 }
 ```
 
@@ -183,10 +192,10 @@ And for syntax highlighting convenience, `shell mdsh` blocks and `shell mdsh mai
 
 ```shell
 mdsh-compile-shell_mdsh() {
-	indent= fence='```' __COMPILE__ fenced mdsh "$1"
+	indent='' fence=$'```' __COMPILE__ fenced mdsh "$1"
 }
 mdsh-compile-shell_mdsh_main() {
-	indent= fence='```' __COMPILE__ fenced "mdsh main" "$1"
+	indent='' fence=$'```' __COMPILE__ fenced "mdsh main" "$1"
 }
 ```
 
@@ -218,7 +227,7 @@ As described in the documentation, markdown files are run with an empty  `$0` an
 # MDSH_ZERO pointing to the original $0.
 
 function mdsh-interpret() {
-	printf -v cmd 'eval "$(%q --compile %q)"' "$0" "$1"
+	printf -v cmd $'eval "$(%q --compile %q)"' "$0" "$1"
 	MDSH_ZERO="$1" exec bash -c "$cmd" "" "${@:2}"
 }
 ```
@@ -244,7 +253,7 @@ Compile one file, which *cannot* be stdin.  Adds a suffix to ensure the compiled
 
 ```shell
 mdsh.--eval() {
-	(($# == 1)) && [[ $1 != - ]] ||
+	{ (($# == 1)) && [[ $1 != - ]]; } ||
 		mdsh-error "Usage: %s --eval FILENAME" "${0##*/}"
 	mdsh.--compile "$1"
 	echo $'__status=$? eval \'return $__status || exit $__status\' 2>/dev/null'
@@ -272,15 +281,16 @@ mdsh.-o() { mdsh.--out "$@"; }
 
 ```shell
 # mdsh-error: printf args to stderr and exit w/EX_USAGE (code 64)
-mdsh-error() { printf "$1\n" "${@:2}" >&2; exit 64; }
+# shellcheck disable=SC2059  # argument is a printf format string
+mdsh-error() { printf "$1"'\n' "${@:2}" >&2; exit 64; }
 ```
 
 ### Help (-h and --help)
 
 ```shell
 mdsh.--help() {
-	printf "Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n" "${0##*/}"
-	echo -e '
+	printf 'Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n' "${0##*/}"
+	echo $'
 Run and/or compile code blocks from markdownfile(s) to bash.
 Use a filename of `-` to run or compile from stdin.
 
@@ -373,7 +383,7 @@ mdsh-embed() {
 	}
 	contents=$'\n'$(<"$f")$'\n'
 	while [[ $contents == *$'\n'"$boundary"$'\n'* ]]; do
-		let ctr++; boundary="# --- EOF $base.$ctr ---"
+		((ctr++)); boundary="# --- EOF $base.$ctr ---"
 	done
 	printf $'{ if [[ $OSTYPE != cygwin && $OSTYPE != msys && -e /dev/fd/0 ]]; then source /dev/fd/0; else source <(cat); fi; } <<\'%s\'%s%s\n' "$boundary" "$contents" "$boundary"
 }
@@ -421,7 +431,7 @@ Set the cache directory in `MDSH_CACHE` (to be used by `mdsh-run`).  Defaults to
 ```shell
 MDSH_CACHE=
 mdsh-use-cache() {
-	if !(($#)); then
+	if ! (($#)); then
 		set -- "${XDG_CACHE_HOME:-${HOME:+$HOME/.cache}}"
 		set -- "${1:+$1/mdsh}"
 	fi
@@ -451,6 +461,7 @@ mdsh-run() {
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() {
 	if [[ $BASH_VERSINFO == 3 ]]; then # bash 3 can't source from proc
+		# shellcheck disable=SC1091  # shellcheck shouldn't try to read stdin
 		source /dev/fd/0 "${@:2}" <<<"$(mdsh-source "${1--}")"
 	else source <(mdsh-source "${1--}") "${@:2}"
 	fi
