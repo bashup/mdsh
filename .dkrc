@@ -29,7 +29,7 @@ compile-to() {
 before test  compile-to "$BASHER_INSTALL_BIN"/mdsh
 
 # Don't run shellcheck on Travis: we need shellcheck PR #1302 for @funcs
-[[ $TRAVIS ]] || on test  dk shellcheck "$BASHER_INSTALL_BIN"/mdsh
+[[ ${TRAVIS-} ]] || on test  dk shellcheck "$BASHER_INSTALL_BIN"/mdsh
 
 # Build the distribution version
 before build dk test
