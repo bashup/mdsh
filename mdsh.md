@@ -116,27 +116,34 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
 ```shell
 __COMPILE__() {
 	[[ $1 == fenced && $fence == $'```' && ! $indent ]] || return 0  # only unindented ``` code
-	local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
-	local tag_words; mdsh-splitwords "$2" tag_words;  # check for command blocks first
-	if [[ ${tag_words[1]-} == '!'* ]]; then
-		# shellcheck disable=SC2034  # mdsh_lang may be used by the eval
-		local mdsh_lang=${tag_words[0]}
-		set -- "$3" "$2" "$block_start"; eval "${2#*!}"; return
-	elif [[ ${tag_words[1]-} == '+'* ]]; then
+	local mdsh_lang tag_words; mdsh-splitwords "$2" tag_words;  # check for command blocks first
+	case ${tag_words[1]-} in
+	'') mdsh_lang=${tag_words[0]-} ;;  # fast exit for common case
+	'@'*)
+		mdsh_lang=${tag_words[1]#@} ;; # language alias: fall through to function lookup
+	'!'*)
+		mdsh_lang=${tag_words[0]}; set -- "$3" "$2" "$block_start"; eval "${2#*!}"; return
+		;;
+	'+'*)
 		printf 'mdsh_lang=%q; %s %q\n' "${tag_words[0]}" "${2#"${tag_words[0]}"*+}" "$3"
-	elif [[ ${tag_words[1]-} == '|'* ]]; then
+		return
+		;;
+	'|'*)
 		printf 'mdsh_lang=%q; ' "${tag_words[0]}"
-		echo "${2#"${tag_words[0]}"*|} <<'\`\`\`'"; printf $'%s```\n' "$3"; return
-	elif fn-exists "mdsh-lang-$lang"; then
-		mdsh-rewrite "mdsh-lang-$lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$3"
-	elif fn-exists "mdsh-compile-$lang"; then
-		"mdsh-compile-$lang" "$3" "$2" "$block_start"
+		echo "${2#"${tag_words[0]}"*|} <<'\`\`\`'"; printf $'%s```\n' "$3"
+		return
+		;;
+	*)  mdsh_lang=${2//[^_[:alnum:]]/_}  # convert entire line to safe variable name
+	esac
+	if fn-exists "mdsh-lang-$mdsh_lang"; then
+		mdsh-rewrite "mdsh-lang-$mdsh_lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$3"
+	elif fn-exists "mdsh-compile-$mdsh_lang"; then
+		"mdsh-compile-$mdsh_lang" "$3" "$2" "$block_start"
 	else
 		mdsh-misc "$2" "$3"
 	fi
-
-	if fn-exists "mdsh-after-$lang"; then
-		mdsh-rewrite "mdsh-after-$lang"
+	if fn-exists "mdsh-after-$mdsh_lang"; then
+		mdsh-rewrite "mdsh-after-$mdsh_lang"
 	fi
 }
 ```

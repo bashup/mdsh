@@ -282,11 +282,19 @@ You can define handlers for empty languages, too:
     > EOF
     this is a test
 
-And `shell mdsh` blocks are treated the same as plain `mdsh` blocks:
+And `shell @mdsh` blocks are treated the same as plain `mdsh` blocks:
 
 ````sh
     $ mdsh --compile - <<'EOF'
+    > Note: This syntax is deprecated; use 'shell @mdsh' or 'bash @mdsh' instead
     > ```shell mdsh
+    > echo "Hello from mdsh!"
+    > ```
+    > EOF
+    Hello from mdsh!
+
+    $ mdsh --compile - <<'EOF'
+    > ```shell @mdsh foo bar baz
     > echo "Hello from mdsh!"
     > ```
     > EOF
