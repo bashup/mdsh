@@ -17,12 +17,12 @@ And then we run the result with mdsh:
     
     // hey
     
-    # line 41:
+    # line 41, json block:
     def example: {"foo": "bar"}
     ;
     The html is: <html />
     
-    hello world!
+    hello, world from a python block
     Most tools will highlight this block as shell script
 
 (Notice that the output for each data block includes the line feed that terminated it.)

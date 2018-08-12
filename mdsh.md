@@ -119,10 +119,13 @@ __COMPILE__() {
 	local lang="${2//[^_[:alnum:]]/_}"; # convert language to safe variable/function name
 	local tag_words; mdsh-splitwords "$2" tag_words;  # check for command blocks first
 	if [[ ${tag_words[1]-} == '!'* ]]; then
+		# shellcheck disable=SC2034  # mdsh_lang may be used by the eval
+		local mdsh_lang=${tag_words[0]}
 		set -- "$3" "$2" "$block_start"; eval "${2#*!}"; return
 	elif [[ ${tag_words[1]-} == '+'* ]]; then
-		printf '%s %q\n' "${2#"${tag_words[0]}"*+}" "$3"
+		printf 'mdsh_lang=%q; %s %q\n' "${tag_words[0]}" "${2#"${tag_words[0]}"*+}" "$3"
 	elif [[ ${tag_words[1]-} == '|'* ]]; then
+		printf 'mdsh_lang=%q; ' "${tag_words[0]}"
 		echo "${2#"${tag_words[0]}"*|} <<'\`\`\`'"; printf $'%s```\n' "$3"; return
 	elif fn-exists "mdsh-lang-$lang"; then
 		mdsh-rewrite "mdsh-lang-$lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$3"

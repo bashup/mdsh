@@ -9,13 +9,13 @@ By default, `mdsh` only considers `shell` code blocks to be bash code, but you c
 
 # Hello World in Python
 
-​```mdsh
+```mdsh
 mdsh-lang-python() { python; }
-​```
+```
 
-​```python
+```python
 print("hello world!")
-​```
+```
 ~~~
 
 Running the above markdown file produces the same results as this equivalent bash script:
@@ -178,38 +178,38 @@ Sometimes you have only one block that needs to be processed in a particular way
 
 A command block is a code block whose language tag's *second word* begins with a `|`, `+`, or `!`:
 
-* If it's a `|`, the remainder of the language tag is executed at runtime with the block's contents on standard input (just like an `mdsh-lang-X` function body)
-* If it's a `+`, the remainder of the language tag is executed at runtime with the block's contents as an extra command line argument
-* If it's a `!`, the remainder of the language tag is executed at **compile** time with the block's contents in `$1`, and must output compiled code to standard output (just like an `mdsh-compile-X` function).  (The full language tag is in `$2`, and the code block's starting line number is in `$3`.  If the source being compiled is a file, `$MDSH_SOURCE` is the source filename.)
+* If it's a `|`, the remainder of the language tag is executed at runtime with the block's contents on standard input (just like an `mdsh-lang-X` function body), and the shell variable `mdsh_lang` set to the first word of the language tag.
+* If it's a `+`, the remainder of the language tag is executed at runtime with the block's contents as an extra command line argument, and the shell variable `mdsh_lang` set to the first word of the language tag.
+* If it's a `!`, the remainder of the language tag is executed at **compile** time with the block's contents in `$1`, and must output compiled code to standard output (just like an `mdsh-compile-X` function).  (The full language tag is in `$2`, and the code block's starting line number is in `$3`.  If the source being compiled is a file, `$MDSH_SOURCE` is the source filename.)  `$mdsh_lang` is set to the first word of the language tag.
 
 (In either case, the word *before* the `|` or `!` is ignored and discarded: it's assumed to be just a syntax highlighting hint.)
 
 Command blocks override normal language function lookups, so no  `mdsh-after-X` , `mdsh-lang-X`, or `mdsh-compile-X` functions are looked up or executed for command blocks.  Thus, this code as input to mdsh:
 
 ~~~markdown
-```json !printf "echo %q\n" "# line $3:"  "def example: $1;"
+```json !printf "echo %q\n" "# line $3, $mdsh_lang block:"  "def example: $1;"
 {"foo": "bar"}
 ```
 
-```html +echo "The html is:"
+```html +echo "The $mdsh_lang is:"
 <html />
 ```
 
-```python |python
-print("hello world!")
+```python |python - "a $mdsh_lang block"
+import sys; print "hello, world from "+sys.argv[1]
 ```
 ~~~
 
 would compile to the following shell script:
 
-```bash
-echo \#line\ 41:
+~~~bash
+echo \#line\ 41, json block:
 echo $'def example: {"foo": "bar"}\n;'
 echo "The html is:" $'<html />\n'
-python <<<'```'
-print("hello world!")
-​```
+python - "a python block" <<<'```'
+import sys; print "hello, world from "+sys.argv[1]
 ```
+~~~
 
 Notice that both forms of command block tags can contain virtually arbitrary bash code, including pipes, substitutions, etc., but **must not** contain backquote characters, as the [Commonmark specification](http://spec.commonmark.org/0.28/#fenced-code-blocks) calls for treating such lines as regular text with inline code, rather than the start of a fenced code block.  mdsh and other Commonmark-conforming tools will therefore not even recognize the line as beginning a code block, and parsing of the rest of the input file will be thrown off, with code being interpreted as text and vice versa.
 
