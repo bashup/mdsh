@@ -46,6 +46,7 @@ print("hello world!")
   * [Data Blocks](#data-blocks)
   * [Processing Non-`shell` Languages](#processing-non-shell-languages)
   * [Advanced Block Compilation Techniques](#advanced-block-compilation-techniques)
+    + [Compile-Time Variables](#compile-time-variables)
   * [Command Blocks and Arguments](#command-blocks-and-arguments)
 - [Tips and Techniques](#tips-and-techniques)
   * [Literate Testing](#literate-testing)
@@ -87,7 +88,7 @@ Both `--eval` and `--compile` can be preceded with `--out` *filename*, in which 
 
 ### Data Blocks
 
-The contents of blocks that are *not* tagged `shell` or `@mdsh` are treated as *data* by default: their contents are added to bash arrays named according to the language on the block, e.g.:
+The contents of unindented, triple-backquoted blocks that are *not* tagged `shell` or `shell @mdsh` are treated as *data* by default: their contents are added to bash arrays named according to the language on the block, e.g.:
 
 ~~~markdown
 # Data Arrays Example
