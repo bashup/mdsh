@@ -154,8 +154,10 @@ To do that, it needs to be able to split words, detect what functions exist, and
 
 ```shell
 # split words in $1 into the array named by $2 (REPLY by default), without wildcard expansion
+# shellcheck disable=SC2206  # set -f is in effect
 mdsh-splitwords() {
-	set -f -- "$-" "$@";  eval "${3:-REPLY}"'=($2)'; [[ $1 == *f* ]] || set +f
+	local f=$-; set -f;  if [[ ${2-} ]]; then eval "$2"'=($1)'; else REPLY=($1); fi
+	[[ $1 == *f* ]] || set +f
 }
 ```
 
