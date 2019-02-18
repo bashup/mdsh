@@ -21,7 +21,7 @@
 
 set -euo pipefail  # Strict mode
 mdsh-parse() {
-	local cmd=$1 lno=0 block_start lang block ln indent fence close_fence indent_remove
+	local cmd=$1 lno=0 block_start lang block ln indent fence close_fence indent_remove md_block
 	local open_fence=$'^( {0,3})(~~~+|```+) *([^`]*)$'
 	while ((lno++)); IFS= read -r ln; do
 		if [[ $ln =~ $open_fence ]]; then
@@ -31,6 +31,11 @@ mdsh-parse() {
 				! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; block+=$ln$'\n'
 			done
 			lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$block";
+			# reset open md_block
+			md_block=
+		else
+			# accumulate md text
+			md_block+=$ln$'\n'
 		fi
 	done
 }
@@ -67,10 +72,13 @@ __COMPILE__() {
 		;;
 	*)  mdsh_lang=${2//[^_[:alnum:]]/_}  # convert entire line to safe variable name
 	esac
+	if fn-exists "mdsh-md-compile"; then
+		mdsh-md-compile "$md_block" "$lang"
+	fi
 	if fn-exists "mdsh-lang-$mdsh_lang"; then
 		mdsh-rewrite "mdsh-lang-$mdsh_lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$3"
 	elif fn-exists "mdsh-compile-$mdsh_lang"; then
-		"mdsh-compile-$mdsh_lang" "$3" "$2" "$block_start"
+		"mdsh-compile-$mdsh_lang" "$3" "$2" "$block_start" "$md_block"
 	else
 		mdsh-misc "$2" "$3"
 	fi
