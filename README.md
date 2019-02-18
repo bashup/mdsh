@@ -47,6 +47,7 @@ print("hello world!")
   * [Processing Non-`shell` Languages](#processing-non-shell-languages)
   * [Advanced Block Compilation Techniques](#advanced-block-compilation-techniques)
     + [Compile-Time Variables](#compile-time-variables)
+    + [Programmatic Block Generation](#programmatic-block-generation)
   * [Command Blocks and Arguments](#command-blocks-and-arguments)
 - [Tips and Techniques](#tips-and-techniques)
   * [Literate Testing](#literate-testing)
@@ -198,12 +199,38 @@ Notice too, by the way, that `compile` functions get access to the actual block 
 
 In addition to their positional arguments, compile-time hooks such as  `mdsh-misc` and  `mdsh-compile-X` also receive a few variables that can be helpful for parsing special block headers or generating error messages:
 
-*  `${tag_words[@]}` is an array of the whitespace-separated words from the original block opening line.  For example, if a block opened with `` ```foo @bar.baz spam ``, then `tag_words=([0]="foo" [1]="@bar.baz" [2]="spam")`.  (`${#tag_words[@]}` is the number of words.)
+* `${tag_words[@]}` is an array of the whitespace-separated words from the original block opening line.  For example, if a block opened with `` ```foo @bar.baz spam ``, then `tag_words=([0]="foo" [1]="@bar.baz" [2]="spam")`.  (`${#tag_words[@]}` is the number of words.)
 * `$mdsh_lang` is the language of the block as viewed by mdsh -- i.e., the `X` in `mdsh-lang-X`.  (So it's either `${tag_words[0]}`, `${tag_words[1]#@}`, or the entire line contents with non-identifier characters replaced by `_`.)
 * If the source being compiled is a file, `$MDSH_SOURCE` is the source filename.
 * `$block_start` is the starting line number of the block in the original source.
+* `$mdsh_block` contains the text of the block
+* `$mdsh_tag` contains the original block opening line (i.e., the unsplit form of tag_words)
 
 (These variables are also usable by compile-time command blocks, as described in the next section.)
+
+#### Programmatic Block Generation
+
+The `mdsh-block` function allows you to programmatically generate a code block of a designated language.  This can be useful for e.g. conditional blocks.  For example, this `if-env` function can be used in a command block to generate code that will check the value of `$WP_ENV` at runtime and conditionally execute the block's contents:
+
+~~~markdown
+```shell @mdsh
+if-env() {
+   printf -v REPLY '|%q' "$@"
+   echo "case \$WP_ENV in ${REPLY#|})"
+   mdsh-block "$mdsh_lang" "$mdsh_block" "$block_start"
+   echo
+   echo "esac"
+}
+```
+
+```css !if-env dev staging
+/* This CSS is only used in dev and staging */
+```
+~~~
+
+The `mdsh-block` function takes up to four arguments: a language, a block body, a starting line number, and a "raw" language tag (which defaults to the language if not given).  The first three arguments are also optional, defaulting to `$mdsh_lang`, `$mdsh_block`, and `$block_start` if omitted.  (Which means the above code could have just called `mdsh-block` with no arguments!)
+
+`mdsh-block` follows the standard language lookup logic, looking first for `mdsh-lang-X`, then `mdsh-compile-X`, and then falling back to `mdsh-misc`, cloning `mdsh-after-X` as well if applicable.  It does not support command blocks or language aliases, so no `@` ,`+`, `!`, or `|` expressions can be used.  It's intended for use in compile-time code only, i.e. `!` command blocks, `@mdsh` blocks, and handlers like `mdsh-misc` and `mdsh-compile-X` functions.
 
 ### Command Blocks and Arguments
 

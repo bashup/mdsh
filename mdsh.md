@@ -27,6 +27,9 @@ set -euo pipefail  # Strict mode
     + [mdsh-source](#mdsh-source)
     + [mdsh-compile](#mdsh-compile)
   * [Code Block Handling](#code-block-handling)
+    + [mdsh-block](#mdsh-block)
+    + [mdsh-emit-block](#mdsh-emit-block)
+    + [mdsh-splitwords](#mdsh-splitwords)
     + [fn-exists](#fn-exists)
     + [mdsh-rewrite](#mdsh-rewrite)
   * [Default Languages and Data Handling](#default-languages-and-data-handling)
@@ -62,16 +65,16 @@ The `$fence` and `$indent` variables can be inspected to tell what the block's o
 
 ```shell
 mdsh-parse() {
-	local cmd=$1 lno=0 block_start lang block ln indent fence close_fence indent_remove
+	local cmd=$1 lno=0 block_start lang mdsh_block ln indent fence close_fence indent_remove
 	local open_fence=$'^( {0,3})(~~~+|```+) *([^`]*)$'
 	while ((lno++)); IFS= read -r ln; do
 		if [[ $ln =~ $open_fence ]]; then
-			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
+			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} mdsh_block=
 			block_start=$lno close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
 			while ((lno++)); IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
-				! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; block+=$ln$'\n'
+				! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; mdsh_block+=$ln$'\n'
 			done
-			lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$block";
+			lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$mdsh_block"
 		fi
 	done
 }
@@ -116,7 +119,8 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
 ```shell
 __COMPILE__() {
 	[[ $1 == fenced && $fence == $'```' && ! $indent ]] || return 0  # only unindented ``` code
-	local mdsh_lang tag_words; mdsh-splitwords "$2" tag_words;  # check for command blocks first
+	local mdsh_tag=$2 mdsh_lang tag_words
+	mdsh-splitwords "$2" tag_words  # check for command blocks first
 	case ${tag_words[1]-} in
 	'') mdsh_lang=${tag_words[0]-} ;;  # fast exit for common case
 	'@'*)
@@ -135,20 +139,42 @@ __COMPILE__() {
 		;;
 	*)  mdsh_lang=${2//[^_[:alnum:]]/_}  # convert entire line to safe variable name
 	esac
+	mdsh-emit-block
+}
+```
+
+To do that, it needs to be able to split words, detect what functions exist, and to extract their source code.
+
+#### mdsh-block
+
+mdsh-block is an API function for programmatically compiling a non-command block of a specified language; it takes as arguments a language name, a block body, a block starting line, and a raw language tag.  Any arguments that are omitted use the same values as the currently-compiling block.  (Except for the raw language tag, which defaults to the same as the language name.)  The `tag_words` array is set by splitting the raw language tag.
+
+```shell
+mdsh-block() {
+	local mdsh_lang=${1-${mdsh_lang-}} mdsh_block=${2-${mdsh_block-}}
+	local block_start=${3-${block_start-}} mdsh_tag=${4-${mdsh_lang-}} tag_words
+	mdsh-splitwords "$mdsh_tag" tag_words; mdsh-emit-block
+}
+```
+
+#### mdsh-emit-block
+
+Emit a non-command block, using the current values of `$mdsh_lang`, `$mdsh_block`, `$mdsh_tag`, `${tag_words[@]}`and `$block_start`.
+
+```shell
+mdsh-emit-block() {
 	if fn-exists "mdsh-lang-$mdsh_lang"; then
-		mdsh-rewrite "mdsh-lang-$mdsh_lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$3"
+		mdsh-rewrite "mdsh-lang-$mdsh_lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$mdsh_block"
 	elif fn-exists "mdsh-compile-$mdsh_lang"; then
-		"mdsh-compile-$mdsh_lang" "$3" "$2" "$block_start"
+		"mdsh-compile-$mdsh_lang" "$mdsh_block" "$mdsh_tag" "$block_start"
 	else
-		mdsh-misc "$2" "$3"
+		mdsh-misc "$mdsh_tag" "$mdsh_block"
 	fi
 	if fn-exists "mdsh-after-$mdsh_lang"; then
 		mdsh-rewrite "mdsh-after-$mdsh_lang"
 	fi
 }
 ```
-
-To do that, it needs to be able to split words, detect what functions exist, and to extract their source code.
 
 #### mdsh-splitwords
 

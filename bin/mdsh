@@ -21,16 +21,16 @@
 
 set -euo pipefail  # Strict mode
 mdsh-parse() {
-	local cmd=$1 lno=0 block_start lang block ln indent fence close_fence indent_remove
+	local cmd=$1 lno=0 block_start lang mdsh_block ln indent fence close_fence indent_remove
 	local open_fence=$'^( {0,3})(~~~+|```+) *([^`]*)$'
 	while ((lno++)); IFS= read -r ln; do
 		if [[ $ln =~ $open_fence ]]; then
-			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} block=
+			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} mdsh_block=
 			block_start=$lno close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
 			while ((lno++)); IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
-				! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; block+=$ln$'\n'
+				! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; mdsh_block+=$ln$'\n'
 			done
-			lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$block";
+			lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$mdsh_block"
 		fi
 	done
 }
@@ -48,7 +48,8 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
 )
 __COMPILE__() {
 	[[ $1 == fenced && $fence == $'```' && ! $indent ]] || return 0  # only unindented ``` code
-	local mdsh_lang tag_words; mdsh-splitwords "$2" tag_words;  # check for command blocks first
+	local mdsh_tag=$2 mdsh_lang tag_words
+	mdsh-splitwords "$2" tag_words  # check for command blocks first
 	case ${tag_words[1]-} in
 	'') mdsh_lang=${tag_words[0]-} ;;  # fast exit for common case
 	'@'*)
@@ -67,12 +68,20 @@ __COMPILE__() {
 		;;
 	*)  mdsh_lang=${2//[^_[:alnum:]]/_}  # convert entire line to safe variable name
 	esac
+	mdsh-emit-block
+}
+mdsh-block() {
+	local mdsh_lang=${1-${mdsh_lang-}} mdsh_block=${2-${mdsh_block-}}
+	local block_start=${3-${block_start-}} mdsh_tag=${4-${mdsh_lang-}} tag_words
+	mdsh-splitwords "$mdsh_tag" tag_words; mdsh-emit-block
+}
+mdsh-emit-block() {
 	if fn-exists "mdsh-lang-$mdsh_lang"; then
-		mdsh-rewrite "mdsh-lang-$mdsh_lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$3"
+		mdsh-rewrite "mdsh-lang-$mdsh_lang" "{" "} <<'\`\`\`'"; printf $'%s```\n' "$mdsh_block"
 	elif fn-exists "mdsh-compile-$mdsh_lang"; then
-		"mdsh-compile-$mdsh_lang" "$3" "$2" "$block_start"
+		"mdsh-compile-$mdsh_lang" "$mdsh_block" "$mdsh_tag" "$block_start"
 	else
-		mdsh-misc "$2" "$3"
+		mdsh-misc "$mdsh_tag" "$mdsh_block"
 	fi
 	if fn-exists "mdsh-after-$mdsh_lang"; then
 		mdsh-rewrite "mdsh-after-$mdsh_lang"

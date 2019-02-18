@@ -17,7 +17,7 @@ And then we run the result with mdsh:
     
     // hey
     
-    # line 49, json block:
+    # line 62, json block:
     def example: {"foo": "bar"}
     ;
     The html is: <html />
