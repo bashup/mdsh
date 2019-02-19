@@ -22,6 +22,7 @@ set -euo pipefail  # Strict mode
 <!-- toc -->
 
 - [Parser](#parser)
+  * [Parser Customization: mdsh-find-block](#parser-customization-mdsh-find-block)
 - [Compiler](#compiler)
   * [API](#api)
     + [mdsh-source](#mdsh-source)
@@ -66,17 +67,31 @@ The `$fence` and `$indent` variables can be inspected to tell what the block's o
 ```shell
 mdsh-parse() {
 	local cmd=$1 lno=0 block_start lang mdsh_block ln indent fence close_fence indent_remove
-	local open_fence=$'^( {0,3})(~~~+|```+) *([^`]*)$'
-	while ((lno++)); IFS= read -r ln; do
-		if [[ $ln =~ $open_fence ]]; then
-			indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} mdsh_block=
-			block_start=$lno close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
-			while ((lno++)); IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
-				! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; mdsh_block+=$ln$'\n'
-			done
-			lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$mdsh_block"
-		fi
+	local mdsh_fence=$'^( {0,3})(~~~+|```+) *([^`]*)$'
+	while mdsh-find-block; do
+		indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} mdsh_block=
+		block_start=$lno close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
+		while ((lno++)); IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
+			! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; mdsh_block+=$ln$'\n'
+		done
+		lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$mdsh_block"
 	done
+}
+```
+
+### Parser Customization: mdsh-find-block
+
+For use cases that require access to markdown that's not part of a fenced code block, the parser can be customized by replacing the `mdsh-find-block` function.  This function must:
+
+* Increment the variable `lno` for each line read from stdin
+* Check the line read against the `$mdsh_fence` regular expression and return true if it's a match
+* Return false if the end of file is reached
+
+As long as the function does these things, it can do whatever else is desired with the data that's read.
+
+```shell
+mdsh-find-block(){
+	while ((lno++)); IFS= read -r ln; do if [[ $ln =~ $mdsh_fence ]]; then return; fi; done; false
 }
 ```
 
