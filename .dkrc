@@ -8,7 +8,7 @@
 # Available modules (uncomment to use):
 
 dk use: cram                  # run tests using the "cram" functional test tool
-dk use: entr-watch            # watch files and re-run tests or other commands
+dk use: modd-watch            # watch files and re-run tests or other commands
 dk use: shell-console         # make the "console" command enter a subshell
 dk use: bash32                # enable doing tests/console/etc. in bash3.2 w/docker
 dk use: shellcheck            # support running shellcheck (via docker if not installed)
@@ -34,3 +34,5 @@ before test  compile-to "$BASHER_INSTALL_BIN"/mdsh
 # Build the distribution version
 before build dk test
 on     build compile-to bin/mdsh
+
+watch+ "*.md" "specs/*" "!**/*.md.err" "!**/.~*.md" -- dk test
