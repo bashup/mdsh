@@ -159,7 +159,7 @@ mdsh.--out() {
 mdsh.-o() { mdsh.--out "$@"; }
 # mdsh-error: printf args to stderr and exit w/EX_USAGE (code 64)
 # shellcheck disable=SC2059  # argument is a printf format string
-mdsh-error() { printf "$1"'\n' "${@:2}" >&2; exit 64; }
+mdsh-error() { exit 64 "$1" "${2-}" "${@:3}"; }
 mdsh.--help() {
 	printf 'Usage: %s [--out FILE] [ --compile | --eval ] markdownfile [args...]\n' "${0##*/}"
 	echo $'
@@ -202,6 +202,12 @@ MDSH_MODULE=
 	sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
 	echo
 )
+# shellcheck disable=2059
+exit() {
+	set -- "${1-$?}" "${@:2}"
+	case $# in 0|1) : ;; 2) printf '%s\n' "$2" ;; *) printf "$2\\n" "${@:3}" ;; esac >&2
+	builtin exit "$1"
+}
 mdsh-ok(){ return $?;}
 mdsh-embed() {
 	local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=

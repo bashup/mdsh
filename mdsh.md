@@ -47,6 +47,8 @@ set -euo pipefail  # Strict mode
   * [@main](#main)
   * [@comment](#comment)
 - [Utility Functions](#utility-functions)
+  * [exit](#exit)
+  * [mdsh-ok](#mdsh-ok)
   * [mdsh-embed](#mdsh-embed)
   * [mdsh-make](#mdsh-make)
   * [mdsh-cache](#mdsh-cache)
@@ -318,7 +320,7 @@ mdsh.-o() { mdsh.--out "$@"; }
 ```shell
 # mdsh-error: printf args to stderr and exit w/EX_USAGE (code 64)
 # shellcheck disable=SC2059  # argument is a printf format string
-mdsh-error() { printf "$1"'\n' "${@:2}" >&2; exit 64; }
+mdsh-error() { exit 64 "$1" "${2-}" "${@:3}"; }
 ```
 
 ### Help (-h and --help)
@@ -406,6 +408,19 @@ Output the specified file(s) as shell-commented lines, followed by a single blan
 ```
 
 ## Utility Functions
+
+### exit
+
+This function extends the builtin `exit` command to support extra arguments after the exit code.  If a second argument is given, it's printed to stderr; if more arguments are given, the second and subsequent arguments are passed to `printf`, and printed to stderr.  (A trailing `\n` is automatically added to the format string.)
+
+```shell
+# shellcheck disable=2059
+exit() {
+	set -- "${1-$?}" "${@:2}"
+	case $# in 0|1) : ;; 2) printf '%s\n' "$2" ;; *) printf "$2\\n" "${@:3}" ;; esac >&2
+	builtin exit "$1"
+}
+```
 
 ### mdsh-ok
 

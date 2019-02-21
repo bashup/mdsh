@@ -467,12 +467,22 @@ The following functions are available for your use or alteration in scripts sour
   To set a specific cache directory or disable caching, set it using `MDSH_CACHE=` on the same line as `mdsh-run`, e.g. `MDSH_CACHE= mdsh-run somefile` to run `somefile` without caching.  Sourcing or running `mdsh` sets the default `MDSH_CACHE` to `$XDG_CACHE_HOME/mdsh` or `$HOME/.cache/mdsh`, as appropriate for your OS.
 
 * `mdsh-use-cache` *[cachedir]* -- sets `MDSH_CACHE` to *cachedir*.  If no arguments are given, `MDSH_CACHE` is reset to the default of  `$XDG_CACHE_HOME/mdsh` or `$HOME/.cache/mdsh`, as appropriate.
+
 * `run-markdown` *mdfile args...* -- `source` the compiled version of *mdfile* with *args* as its positional arguments (`$1`,  `$2`, etc.), without using a cache.
+
 * `mdsh-error` *format args...* --`printf` *format args* to stderr and terminate the process with errorlevel 64 ([EX_USAGE](https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3#DESCRIPTION)) .  (A linefeed is added to the format string automatically.)
+
 * `mdsh-compile` -- accepts markdown on stdin and outputs bash code on stdout.  The compilation takes place in a subshell, so hook functions defined in the code being compiled do **not** affect the caller's environment.  Hook functions *already* defined in the caller's environment, however, will be used to translate blocks of the relevant languages.
+
 * `mdsh-source` -- like `mdsh-compile`, but not run in subshell, so any hook functions or compile-time variable changes will affect the caller, as if the included source were part of the including document.
+
 * `mdsh-embed` *modulename* -- look for *modulename* on `PATH` (unless it contains a `/`), and dump its contents wrapped in a `source` command and heredoc.  Returns failure if *modulename* isn't found or can't be read.  (Note: unlike Bash's `source` command, this function does **not** fall back to looking for the module in the current directory.  If you want a file in the current directory, use `./modulename`).
+
 * `mdsh-rewrite` *function* *before* *after* -- output the body block of *function* on stdout, optionally replacing the opening and closing braces with *before* and *after*.  (If you're using this to "edit" a function, remember that the replacements must include the opening and closing braces, and the closing brace must be preceded by either a newline or a semicolon or space.)
+
 * `mdsh-make` *sourcefile destfile [cmd args...]* -- compile *sourcefile* to *destfile* if *destfile* doesn't exist or has a different timestamp than *sourcefile*, running *cmd args...* before starting compilation.  Compilation (and *cmd args...*) are run in a subshell.  On successful compilation, *destfile* is touched so its timestamp is the same as *sourcefile*.
+
 * `mdsh-cache` *cachedir sourcefile [key [cmd args...]]* -- like `mdsh-make`, except the destination file is automatically generated as a filename within *cachedir* and returned in `$REPLY`.  If a non-empty *key* is specified, it is used instead of *sourcefile* to generate the destination filename.  The *cachedir* is automatically created if it does not exist.  Generated filenames are an escaped version of the *key* or *sourcefile*, such that they are always a file directly under *cachedir*, even if the source filename has slashes in it.
+
+* `exit` *[code [message [args...]]]* -- exit with status *code* (defaulting to `$?` if not given), after displaying *message* on stderr.  If *args* are given, they're formatted using *message* as a `printf` format string (with an automatically-added newline).
 
