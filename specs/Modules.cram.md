@@ -112,7 +112,7 @@ The result is different depending on whether it's done as a module or not:
 ~~~shell
     $ MDSH_MODULE=x @main fizz   # no-op during @require
 
-    $ mdsh-source <<'EOF'
+    $ mdsh-source >f <<'EOF'
     > ```mdsh
     > echo "# code"
     > @main bar
@@ -120,11 +120,20 @@ The result is different depending on whether it's done as a module or not:
     > @main foo   # only the last call to @main counts
     > echo "# more code"
     > ```
+    > ```shell
+    > foo() { echo "echo self-modify or external change" >>f; }
+    > ```
     > EOF
+
+    $ cat f
     # code
     # This line is always here
     # And so is this
     # more code
-    if [[ $0 == "${BASH_SOURCE-}" ]]; then foo "$@"; fi
+    foo() { echo "echo self-modify or external change" >>f; }
+    if [[ $0 == "${BASH_SOURCE-}" ]]; then foo "$@"; exit; fi
+
+# if @main didn't exit, the output would be 'self-modify or external change'
+    $ bash ./f
 ~~~
 
