@@ -152,10 +152,8 @@ mdsh.--eval() {
 
 mdsh.-E() { mdsh.--eval "$@"; }
 mdsh.--out() {
-	if REPLY=("$(mdsh-main "${@:2}")"); then
-		exec echo "$REPLY" >"$1"   # handle self-compiling properly
-	else exit $?;
-	fi
+	REPLY=("$(set -e; mdsh-main "${@:2}")")
+	mdsh-ok && exec echo "$REPLY" >"$1"   # handle self-compiling properly
 }
 
 mdsh.-o() { mdsh.--out "$@"; }
@@ -204,6 +202,7 @@ MDSH_MODULE=
 	sed -e 's/^\(.\)/# \1/; s/^$/#/;' "$@"
 	echo
 )
+mdsh-ok(){ return $?;}
 mdsh-embed() {
 	local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=
 	[[ $f == */* && -f $f ]] || f=$(command -v "$f") || {
@@ -217,7 +216,7 @@ mdsh-embed() {
 }
 mdsh-make() {
 	[[ -f "$1" && -f "$2" && ! "$1" -nt "$2" && ! "$1" -ot "$2" ]] || {
-		( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
+		( "${@:3}" && mdsh-main --out "$2" --compile "$1" ); mdsh-ok && touch -r "$1" "$2"
 	}
 }
 mdsh-cache() {

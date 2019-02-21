@@ -333,7 +333,7 @@ Unfortunately, the only way you can programmatically *make* `$0 == $BASH_SOURCE`
 
 Passing `--out *file*` as the first option overwrites that file with the compilation (or run) result, only if it completes without an error:
 
-```shell
+````shell
     $ ls x || echo fail
     ls: *: No such file or directory (glob)
     fail
@@ -371,11 +371,19 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     > EOF
     $ bash ./x
     exiting
-```
+
+    $ { mdsh --out x --compile - || echo [$?]; }  <<'EOF'
+    > ```mdsh
+    > return 27
+    > ```
+    > EOF
+    [27]
+
+````
 
 ### Building an Output File with mdsh-make
 
-```shell
+````shell
     $ set +e
     $ mkdir t; cd t
     $ mdsh-make ../t1.md t1 echo building
@@ -395,7 +403,27 @@ Passing `--out *file*` as the first option overwrites that file with the compila
     building
     $ same-time ../t1.md t1; echo $?
     0
-```
+````
+
+mdsh-make should also pass through errors, and without marking the output as compiled:
+
+````shell
+    $ cat >err.md <<'EOF'
+    > ```mdsh
+    > return 27
+    > ```
+    > EOF
+
+    $ mdsh-make err.md err.sh echo testing
+    testing
+    [27]
+
+    $ mdsh-make err.md err.sh echo testing
+    testing
+    [27]
+````
+
+
 
 ### Caching with mdsh-cache
 

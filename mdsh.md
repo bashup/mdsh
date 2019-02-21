@@ -306,10 +306,8 @@ Send output to the named file, overwriting it in place if and only if the compil
 
 ```shell
 mdsh.--out() {
-	if REPLY=("$(mdsh-main "${@:2}")"); then
-		exec echo "$REPLY" >"$1"   # handle self-compiling properly
-	else exit $?;
-	fi
+	REPLY=("$(set -e; mdsh-main "${@:2}")")
+	mdsh-ok && exec echo "$REPLY" >"$1"   # handle self-compiling properly
 }
 
 mdsh.-o() { mdsh.--out "$@"; }
@@ -409,6 +407,14 @@ Output the specified file(s) as shell-commented lines, followed by a single blan
 
 ## Utility Functions
 
+### mdsh-ok
+
+This function returns an exit status equal to the exit status of the last command executed before it.  This allows checking the exit code of a command (e.g. via `some-command; mdsh-ok && whatever`) without suppressing error trapping or bash's `-e` flag during its execution.  It's used to ensure that non-zero exit statuses from compilation functions result in an abort of the `mdsh` command as a whole.
+
+```shell
+mdsh-ok(){ return $?;}
+```
+
 ### mdsh-embed
 
 Embed a bash module's source in such a way that it believes itself to be `source`d when executed.
@@ -434,7 +440,7 @@ Compile file `$1` to file `$2` if the destination doesn't exist or doesn't have 
 ```shell
 mdsh-make() {
 	[[ -f "$1" && -f "$2" && ! "$1" -nt "$2" && ! "$1" -ot "$2" ]] || {
-		( "${@:3}" && mdsh-main --out "$2" --compile "$1" ) && touch -r "$1" "$2"
+		( "${@:3}" && mdsh-main --out "$2" --compile "$1" ); mdsh-ok && touch -r "$1" "$2"
 	}
 }
 ```
