@@ -465,10 +465,23 @@ Automatic cache dir creation, name flattening, and make:
     > printf '%q\n' "$@"
     > ```
     > EOF
+
     $ run-markdown t2.md x y z
     x
     y
     z
+
+    $ cat >t3.md <<'EOF'
+    > ```shell
+    > echo "I shouldn't run!"
+    > ```
+    > ```shell @mdsh
+    > return 99
+    > ```
+    > EOF
+
+    $ run-markdown t3.md
+    [99]
 
 # mdsh-run caches in $MDSH_CACHE with key $2
 
@@ -495,6 +508,14 @@ Automatic cache dir creation, name flattening, and make:
     $ declare -p MDSH_CACHE
     declare -- MDSH_CACHE="cache3"
 
+# mdsh-run doesn't cache if there's an error:
+
+    $ mdsh-run t3.md
+    [99]
+
+    $ ls cache3
+    t2.md
+
 # mdsh-use-cache w/no-args sets to {XDG_CACHE_HOME|HOME/.cache}/mdsh
 
     $ XDG_CACHE_HOME=/my/cache HOME=/home/me mdsh-use-cache
@@ -510,7 +531,7 @@ Automatic cache dir creation, name flattening, and make:
     declare -- MDSH_CACHE=""
 
 
-# or runs run-markdown if cache disabled
+# mdsh-run runs run-markdown if cache disabled
 
     $ run-markdown() { echo "run-markdown" "$@"; }
 

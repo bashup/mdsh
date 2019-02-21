@@ -492,7 +492,7 @@ Run/source the markdown file in `$1`, using the cache directory in `$MDSH_CACHE`
 mdsh-run() {
 	if [[ ${MDSH_CACHE-} ]]; then
 		mdsh-cache "$MDSH_CACHE" "$1" "${2-}"
-		source "$REPLY" "${@:3}"
+		mdsh-ok && source "$REPLY" "${@:3}"
 	else run-markdown "$1" "${@:3}"
 	fi
 }
@@ -504,10 +504,11 @@ mdsh-run() {
 # run-markdown file args...
 # Compile `file` and source the result, passing along any positional arguments
 run-markdown() {
+	REPLY=("$(set -e; mdsh-source "${1--}")"); mdsh-ok || return
 	if [[ $BASH_VERSINFO == 3 ]]; then # bash 3 can't source from proc
 		# shellcheck disable=SC1091  # shellcheck shouldn't try to read stdin
-		source /dev/fd/0 "${@:2}" <<<"$(mdsh-source "${1--}")"
-	else source <(mdsh-source "${1--}") "${@:2}"
+		source /dev/fd/0 "${@:2}" <<<"$REPLY"
+	else source <(echo "$REPLY") "${@:2}"
 	fi
 }
 ```
