@@ -48,6 +48,7 @@ set -euo pipefail  # Strict mode
   * [@comment](#comment)
 - [Utility Functions](#utility-functions)
   * [exit](#exit)
+  * [mdsh-safe-subshell](#mdsh-safe-subshell)
   * [mdsh-ok](#mdsh-ok)
   * [mdsh-embed](#mdsh-embed)
   * [mdsh-make](#mdsh-make)
