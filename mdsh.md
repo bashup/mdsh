@@ -110,7 +110,7 @@ mdsh-source() {
 
 ```shell
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
-	mdsh-source "$@"
+	mdsh-safe-subshell mdsh-source "$@"
 )
 ```
 
@@ -308,7 +308,7 @@ Send output to the named file, overwriting it in place if and only if the compil
 
 ```shell
 mdsh.--out() {
-	REPLY=("$(set -e; mdsh-main "${@:2}")")
+	REPLY=("$(mdsh-safe-subshell mdsh-main "${@:2}")")
 	mdsh-ok && exec echo "$REPLY" >"$1"   # handle self-compiling properly
 }
 
@@ -422,6 +422,14 @@ exit() {
 }
 ```
 
+### mdsh-safe-subshell
+
+This function is needed to emulate the `-e` subshell behavior of bash 3.2 and 4.4+ on all bash versions.  (Without it, subshells and subsitutions that fail due to an error exit return an exit code of 1 on other bash versions, instead of the exit code that triggered the error.)
+
+```shell
+mdsh-safe-subshell() { set -E; trap exit ERR; "$@"; }
+```
+
 ### mdsh-ok
 
 This function returns an exit status equal to the exit status of the last command executed before it.  This allows checking the exit code of a command (e.g. via `some-command; mdsh-ok && whatever`) without suppressing error trapping or bash's `-e` flag during its execution.  It's used to ensure that non-zero exit statuses from compilation functions result in an abort of the `mdsh` command as a whole.
@@ -455,7 +463,7 @@ Compile file `$1` to file `$2` if the destination doesn't exist or doesn't have 
 ```shell
 mdsh-make() {
 	[[ -f "$1" && -f "$2" && ! "$1" -nt "$2" && ! "$1" -ot "$2" ]] || {
-		( "${@:3}" && mdsh-main --out "$2" --compile "$1" ); mdsh-ok && touch -r "$1" "$2"
+		( mdsh-safe-subshell "${@:3}" && mdsh-main --out "$2" --compile "$1" ); mdsh-ok && touch -r "$1" "$2"
 	}
 }
 ```

@@ -44,7 +44,7 @@ mdsh-source() {
 	${MDSH_FOOTER:+ printf %s "$MDSH_FOOTER"}; MDSH_FOOTER=
 }
 mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
-	mdsh-source "$@"
+	mdsh-safe-subshell mdsh-source "$@"
 )
 __COMPILE__() {
 	[[ $1 == fenced && $fence == $'```' && ! $indent ]] || return 0  # only unindented ``` code
@@ -152,7 +152,7 @@ mdsh.--eval() {
 
 mdsh.-E() { mdsh.--eval "$@"; }
 mdsh.--out() {
-	REPLY=("$(set -e; mdsh-main "${@:2}")")
+	REPLY=("$(mdsh-safe-subshell mdsh-main "${@:2}")")
 	mdsh-ok && exec echo "$REPLY" >"$1"   # handle self-compiling properly
 }
 
@@ -208,6 +208,7 @@ exit() {
 	case $# in 0|1) : ;; 2) printf '%s\n' "$2" ;; *) printf "$2\\n" "${@:3}" ;; esac >&2
 	builtin exit "$1"
 }
+mdsh-safe-subshell() { set -E; trap exit ERR; "$@"; }
 mdsh-ok(){ return $?;}
 mdsh-embed() {
 	local f=$1 base=${1##*/}; local boundary="# --- EOF $base ---" contents ctr=
@@ -222,7 +223,7 @@ mdsh-embed() {
 }
 mdsh-make() {
 	[[ -f "$1" && -f "$2" && ! "$1" -nt "$2" && ! "$1" -ot "$2" ]] || {
-		( "${@:3}" && mdsh-main --out "$2" --compile "$1" ); mdsh-ok && touch -r "$1" "$2"
+		( mdsh-safe-subshell "${@:3}" && mdsh-main --out "$2" --compile "$1" ); mdsh-ok && touch -r "$1" "$2"
 	}
 }
 mdsh-cache() {
@@ -260,4 +261,4 @@ run-markdown() {
 	else source <(echo "$REPLY") "${@:2}"
 	fi
 }
-if [[ $0 == "${BASH_SOURCE-}" ]]; then mdsh-main "$@"; fi
+if [[ $0 == "${BASH_SOURCE-}" ]]; then mdsh-main "$@"; exit; fi

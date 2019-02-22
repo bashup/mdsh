@@ -18,7 +18,8 @@ dk use: shellcheck            # support running shellcheck (via docker if not in
 # SC1090 = dynamic 'source' command
 # SC2128 = array/string mixing
 # SC2178 = array/string mixing
-SHELLCHECK_OPTS='-e SC1090,SC2128,SC2178'
+# SC2241 = exit messages
+SHELLCHECK_OPTS='-e SC1090,SC2128,SC2178,SC2241'
 
 compile-to() {
     bin/mdsh --out "$1" --compile "$LOCO_ROOT/mdsh.md"
