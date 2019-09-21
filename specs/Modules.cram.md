@@ -1,11 +1,55 @@
 ## Modules
 
+~~~shell
+    $ source "$BASHER_INSTALL_BIN/mdsh"; set +e
+~~~
+
+### @provide
+
+The `@provide` function defines a function that will be run if the named module is `@require`d later.  You can `@provide` the same module more than once, but only until it has been `@require`d.  `@require` without a command then runs the saved command, or gives an error.
+
+~~~shell
+    $ ( @provide )
+    No command given for @provide at line 4 NULL
+    [64]
+
+    $ ( @provide thingy )
+    No command given for @provide at line 6 NULL
+    [64]
+
+    $ ( @require thingy )
+    No @provide defined for module thingy at line 8 NULL
+    [70]
+
+    $ @provide thingy echo "yada yada"
+    $ declare -f @provide-thingy
+    @provide-thingy () 
+    { 
+        echo yada\ yada
+    }
+
+    $ @provide thingy echo blah
+    $ declare -f @provide-thingy
+    @provide-thingy () 
+    { 
+        echo blah
+    }
+
+    $ @require thingy
+    blah
+
+    $ @require thingy   # already loaded, so no-op
+
+    $ ( @provide thingy echo boom )
+    Module thingy already loaded; attempted redefinition at line 22 NULL
+    [70]
+~~~
+
 ### @require
 
 The `@require` function should run its arguments on first use, but not subsequent uses with the same module name:
 
 ~~~shell
-    $ source "$BASHER_INSTALL_BIN/mdsh"; set +e
     $ @require foo echo "first!"
     first!
     $ @require foo echo "first!"

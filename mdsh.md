@@ -43,6 +43,7 @@ set -euo pipefail  # Strict mode
   * [Help (-h and --help)](#help--h-and---help)
 - [Modules](#modules)
   * [@require](#require)
+  * [@provide](#provide)
   * [@is-main](#is-main)
   * [@module](#module)
   * [@main](#main)
@@ -371,7 +372,29 @@ MDSH_MODULE=
 	flatname "$1"
 	if ! [[ $MDSH_LOADED_MODULES == *"<$REPLY>"* ]]; then
 		MDSH_LOADED_MODULES+="<$REPLY>"; local MDSH_MODULE=$1
-		"${@:2}"
+		if (($#<2)); then
+			REPLY="@provide-$1"
+			fn-exists "$REPLY" || exit 70 \
+				"No @provide defined for module $1 at line $(caller)"
+			"$REPLY"
+		else "${@:2}"
+		fi
+	fi
+}
+```
+
+### @provide
+
+`@provide` *module cmd [args...]* will run *cmd args...* when `@require` *module* is called.
+
+```shell
+@provide() {
+	if (($#<2)); then exit 64 \
+		"No command given for @provide at line $(caller)"
+	elif flatname "$1"; ! [[ $MDSH_LOADED_MODULES == *"<$REPLY>"* ]]; then
+		printf -v REPLY "%q " "${@:2}"; eval "@provide-$1(){ $REPLY; }"
+	else exit 70 \
+		"Module $1 already loaded; attempted redefinition at line $(caller)"
 	fi
 }
 ```
