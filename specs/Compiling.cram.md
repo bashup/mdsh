@@ -301,6 +301,24 @@ And `shell @mdsh` blocks are treated the same as plain `mdsh` blocks:
     Hello from mdsh!
 ````
 
+Codeblocks in lists and blockquotes are valid:
+
+```sh
+    $ mdsh --compile - <<'EOF'
+    > > ```shell
+    > > echo "Hello in blockquote!"
+    > > ```
+    > EOF
+    echo "Hello in blockquote!"
+
+    $ mdsh --compile - <<'EOF'
+    > * ```shell
+    >   echo "Hello from list!"
+    >   ```
+    > EOF
+    echo "Hello from list!"
+```
+
 ### Running Compiled Code
 
 Positional args are passed to the compiled code, and `$0 == $BASH_SOURCE`:

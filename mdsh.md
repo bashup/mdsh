@@ -71,11 +71,12 @@ The `$fence` and `$indent` variables can be inspected to tell what the block's o
 ```shell
 mdsh-parse() {
 	local cmd=$1 lno=0 block_start lang mdsh_block ln indent fence close_fence indent_remove
-	local mdsh_fence=$'^( {0,3})(~~~+|```+) *([^`]*)$'
+	local mdsh_fence=$'^( {0,3})(~~~+|> ~~~+|\* ~~~+|```+|> ```+|\* ```+) *([^`]*)$'
 	while mdsh-find-block; do
 		indent=${BASH_REMATCH[1]} fence=${BASH_REMATCH[2]} lang=${BASH_REMATCH[3]} mdsh_block=
 		block_start=$lno close_fence="^( {0,3})$fence+ *\$" indent_remove="^${indent// / ?}"
 		while ((lno++)); IFS= read -r ln && ! [[ $ln =~ $close_fence ]]; do
+			[[ $fence =~ ^(> |\* )$'```'$ && $ln =~ ^(> |  ) ]] && ln=${ln//[>| ] /}
 			! [[ $ln =~ $indent_remove ]] || ln=${ln#${BASH_REMATCH[0]}}; mdsh_block+=$ln$'\n'
 		done
 		lang="${lang%"${lang##*[![:space:]]}"}"; "$cmd" fenced "$lang" "$mdsh_block"
@@ -137,7 +138,8 @@ mdsh-compile() (  # <-- force subshell to prevent escape of compile-time state
 
 ```shell
 __COMPILE__() {
-	[[ $1 == fenced && $fence == $'```' && ! $indent ]] || return 0  # only unindented ``` code
+	[[ $1 == fenced && $fence =~ ^(> |\* )?$'```'$ && ! $indent ]] || return 0  # only unindented ``` or 
+																				# blockquote or list code
 	local mdsh_tag=$2 mdsh_lang tag_words
 	mdsh-splitwords "$2" tag_words  # check for command blocks first
 	case ${tag_words[1]-} in
