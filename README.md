@@ -328,9 +328,10 @@ If you want to get rid of the `.md` extension on your script, you'll probably wa
 ```sh
 #!/usr/bin/env mdsh
 <!-- ex: set syntax=markdown : -->
+<!-- -*- mode: markdown -*- -->
 ```
 
-This will tell Github, atom (with the `vim-modeline` package), and other editor/display tools that the file is actually Markdown.
+This will tell Github, atom (with the `vim-modeline` package), vim, emacs, and other editor/display tools that the file is actually Markdown.
 
 (Alternately, you can keep the `.md` on the file for editing, but use an extensionless symlink to run it without needing to type the `.md`.)
 
